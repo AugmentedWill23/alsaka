@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Alaska Gold Rush Trail — Version 10</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --primary:#1c3d5a;
+      --accent:#3460c0;
+      --muted:#666;
+      --bg:#e8e6dc;
+      --card:#fff;
+      --success:#2f8f4a;
+      --danger:#b44;
+    }
+    html,body{height:100%;margin:0;font-family:"Segoe UI",Tahoma,Verdana,sans-serif;background:var(--bg);color:#222}
+    #game-container{max-width:1250px;margin:16px auto;background:var(--card);border-radius:10px;padding:16px;box-shadow:0 8px 30px rgba(0,0,0,0.12)}
+    h1{margin:0 0 12px;text-align:center;color:var(--primary);letter-spacing:1px}
+    #top-row{display:flex;gap:12px;flex-wrap:wrap}
+    #left-col{flex:1 1 720px;min-width:300px}
+    #right-col{flex:0 0 420px;min-width:300px}
+    .panel{background:#fff;border-radius:8px;padding:10px;margin-bottom:12px;border:1px solid #efefef}
+    #map{height:80px;background:linear-gradient(90deg,#eaf3ff,#fff);border-radius:8px;position:relative;overflow:hidden;border:1px solid #d6e8ff}
+    .town-marker{position:absolute;top:6px;transform:translateX(-50%);text-align:center;font-size:12px;cursor:pointer}
+    .town-marker .dot{width:12px;height:12px;border-radius:50%;background:#b0d4ff;border:2px solid var(--accent);margin:0 auto;transition:transform .12s}
+    .town-marker:hover .dot{transform:scale(1.18)}
+    #progress-bar{height:10px;background:#dfeeff;border-radius:6px;overflow:hidden;position:relative;border:1px solid #cfe0ff}
+    #progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),#2a80d1);width:0%;transition:width .35s}
+    #game-text{min-height:120px;white-space:pre-line;font-size:0.98rem}
+    .choice-btn{display:block;width:100%;text-align:left;padding:10px;margin:6px 0;background:var(--primary);color:#fff;border:none;border-radius:6px;cursor:pointer;transition:background .14s}
+    .choice-btn:hover{background:#1f4e76}
+    #stats .row{display:flex;gap:8px;flex-wrap:wrap}
+    #stats .item{background:#f6f6f6;padding:6px 8px;border-radius:6px;font-size:0.95em}
+    table{width:100%;border-collapse:collapse;font-size:0.95em}
+    td,th{padding:6px 8px;border-bottom:1px solid #f2f2f2;text-align:left}
+    .dead{color:var(--danger);opacity:0.92}
+    .quick-actions{display:flex;flex-direction:column;gap:6px}
+    .action-btn{padding:8px;border-radius:6px;border:none;cursor:pointer;background:#2f5a2f;color:#fff}
+    .action-btn.muted{background:#bfbfbf;color:#333}
+    .action-btn.warn{background:var(--danger)}
+    #market-graph{width:100%;height:80px;border:1px solid #e1eefc;border-radius:6px;background:#fff;margin-top:8px}
+    .tooltip{position:absolute;background:#222;color:#fff;padding:6px 8px;border-radius:6px;font-size:12px;pointer-events:none;z-index:9999;opacity:0;transition:opacity .12s}
+    .small{font-size:0.86em;color:var(--muted)}
+    input[type="range"]{width:140px}
+    .flex-row{display:flex;gap:8px;align-items:center}
+    #achievements-list{max-height:140px;overflow:auto}
+    .achieved{color:var(--success);font-weight:700}
+    .difficulty-btn{padding:6px 8px;border-radius:6px;border:none;cursor:pointer}
+    .difficulty-btn.active{box-shadow:0 0 0 3px rgba(52,96,192,0.12)}
+    #minigame-modal{position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:2000;visibility:hidden;opacity:0;transition:opacity .15s}
+    #minigame-modal.show{visibility:visible;opacity:1}
+    #minigame{background:#fff;padding:16px;border-radius:8px;width:380px;max-width:90%}
+    .btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .muted-btn{background:#ddd;padding:6px 10px;border-radius:6px;border:none;cursor:pointer}
+    @media (max-width:980px){#top-row{flex-direction:column}#right-col{order:2}#left-col{order:1}}
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <h1>Alaska Gold Rush Trail — Version 10 (No Keybinds)</h1>
+
+    <div id="top-row">
+      <div id="left-col">
+        <div class="panel" id="map-panel">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>Trail Map</strong></div>
+            <div class="small" id="day-range"></div>
+          </div>
+          <div id="map" title="Trail map — click town markers when you reach them"></div>
+          <div id="progress-bar"><div id="progress-fill"></div></div>
+          <div class="small" style="margin-top:6px"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#b0d4ff;border:2px solid var(--accent);margin-right:6px;vertical-align:middle"></span> Town — hover markers for info</div>
+        </div>
+
+        <div class="panel" id="event-panel">
+          <div id="event-img-container" style="text-align:center"></div>
+          <div id="game-text"></div>
+          <div id="choices" style="margin-top:10px"></div>
+        </div>
+
+        <div class="panel" id="log" style="max-height:160px;overflow:auto">
+          <b>Trail Log</b>
+          <div id="log-entries" class="small" style="margin-top:8px"></div>
+        </div>
+      </div>
+
+      <div id="right-col">
+        <div class="panel" id="stats">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><b>Party Status</b></div>
+            <div class="small">Day <span id="day-num"></span></div>
+          </div>
+          <div class="row" id="stats-row" style="margin-top:8px"></div>
+
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center;justify-content:space-between">
+            <div><b>Market:</b> <span id="market-price" class="small"></span></div>
+            <div class="small" id="gold-display"></div>
+          </div>
+
+          <canvas id="market-graph"></canvas>
+        </div>
+
+        <div class="panel" id="party-stats">
+          <b>Party Members</b>
+          <div id="party-list" style="margin-top:6px"></div>
+        </div>
+
+        <div class="panel" id="inventory">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><b>Inventory</b></div>
+            <div><button id="sell-gold-btn" class="muted-btn">Sell Gold</button></div>
+          </div>
+          <div id="inventory-contents" style="margin-top:8px"></div>
+          <div style="margin-top:8px">
+            <b>Meal Plan:</b>
+            <select id="meal-plan-select">
+              <option value="normal">Normal</option>
+              <option value="hearty">Hearty (+health, uses more food)</option>
+              <option value="barebones">Barebones (use less food, lose health)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="panel" id="actions-panel">
+          <b>Quick Actions & Minigames</b>
+          <div class="quick-actions" style="margin-top:6px">
+            <button id="q-hunt" class="action-btn">Hunt (minigame)</button>
+            <button id="q-scavenge" class="action-btn">Scavenge</button>
+            <button id="q-rest" class="action-btn muted">Rest</button>
+            <button id="q-trade" class="action-btn">Trade</button>
+            <button id="q-build-raft" class="action-btn">Build Raft</button>
+            <button id="q-pan" class="action-btn">Pan for Gold (minigame)</button>
+          </div>
+        </div>
+
+        <div class="panel" id="settings-panel">
+          <b>Settings & Features</b>
+          <div style="margin-top:8px" class="flex-row">
+            <div>
+              <div class="small">Difficulty</div>
+              <div style="display:flex;gap:6px;margin-top:6px">
+                <button class="difficulty-btn" id="diff-easy">Easy</button>
+                <button class="difficulty-btn active" id="diff-normal">Normal</button>
+                <button class="difficulty-btn" id="diff-hard">Hard</button>
+              </div>
+            </div>
+            <div style="margin-left:6px">
+              <div class="small">Sound</div>
+              <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+                <button id="sound-toggle" class="muted-btn">Sound: OFF</button>
+                <input id="volume" type="range" min="0" max="1" step="0.05" value="0.5" />
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:10px">
+            <b>Achievements</b>
+            <div id="achievements-list" style="margin-top:6px" class="small"></div>
+          </div>
+        </div>
+
+        <div class="panel" id="turn-controls" style="display:none">
+          <b>Turn-based Mode</b>
+          <div style="margin-top:6px">
+            <label><input type="checkbox" id="turnModeToggle"> Enable Turn Mode (lock order)</label>
+          </div>
+          <div style="margin-top:6px">
+            <label>Current Player:
+              <select id="currentPlayer"></select>
+            </label>
+          </div>
+          <div style="margin-top:6px">
+            <button id="endTurnBtn" class="muted-btn">End Turn</button>
+            <button id="toggleTurnModeBtn" class="muted-btn">Switch to Classic Mode</button>
+          </div>
+        </div>
+
+        <div class="panel" id="savepanel">
+          <b>Save / Load</b>
+          <div class="small">Autosave: <label><input type="checkbox" id="autosave-toggle" checked> ON</label></div>
+          <div style="margin-top:6px">
+            <div style="display:flex;gap:6px;margin-bottom:6px">
+              <button id="save-slot-1">Save Slot 1</button>
+              <button id="load-slot-1">Load Slot 1</button>
+              <button id="del-slot-1" class="muted-btn">Delete</button>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:6px">
+              <button id="save-slot-2">Save Slot 2</button>
+              <button id="load-slot-2">Load Slot 2</button>
+              <button id="del-slot-2" class="muted-btn">Delete</button>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button id="save-slot-3">Save Slot 3</button>
+              <button id="load-slot-3">Load Slot 3</button>
+              <button id="del-slot-3" class="muted-btn">Delete</button>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:8px">
+              <button id="export-save" class="muted-btn">Export Save</button>
+              <button id="import-save" class="muted-btn">Import Save</button>
+            </div>
+            <textarea id="import-data" placeholder="Paste save JSON here to import" style="width:100%;height:60px;margin-top:6px;display:none"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Minigame modal -->
+  <div id="minigame-modal">
+    <div id="minigame">
+      <div id="minigame-title" style="font-weight:700;margin-bottom:8px">Minigame</div>
+      <div id="minigame-body"></div>
+      <div class="btn-row" id="minigame-buttons"></div>
+    </div>
+  </div>
+
+  <!-- Tooltip element -->
+  <div id="tooltip" class="tooltip"></div>
+
+  <script>
+    // ===== Utilities =====
+    function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+    function chance(p){ return Math.random() < p; }
+    function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+    function escapeHtml(s){ return (s+'').replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
+
+    // ===== Data & configuration (preserve previous behavior) =====
+    const occupations = [
+      {name:"Miner", bonus:"Mining", desc:"+Better gold finds; can pan/sense richer streams."},
+      {name:"Hunter", bonus:"Hunting", desc:"+Better hunting, more reliable food."},
+      {name:"Doctor", bonus:"Medicine", desc:"+Heals weekly and reduces sickness chance."},
+      {name:"Carpenter", bonus:"Carpentry", desc:"+Better raft building, reduces equipment failure."},
+      {name:"Merchant", bonus:"Trading", desc:"+Better trade deals and reduced robbery chance."},
+      {name:"Banker", bonus:"Wealth", desc:"+$150 starting cash per banker and slight market help."}
+    ];
+
+    const weatherTypes = [
+      {name:"Clear", effect:()=>0, text:"A clear day with little trouble."},
+      {name:"Cold", effect:()=>-3, text:"Bitter cold chills the party."},
+      {name:"Rain", effect:()=>-2, text:"Rain makes the trail muddy and slow."},
+      {name:"Storm", effect:()=>-8, text:"A snowstorm slows you and causes injury."},
+      {name:"Blizzard", effect:()=>-14, text:"A deadly blizzard bites at you!"}
+    ];
+
+    const outfitterItems = [
+      {name:"Food (10 units)", price:20, key:"food", value:10},
+      {name:"Warm Clothing", price:35, key:"clothing", value:1},
+      {name:"Medicine", price:50, key:"medicine", value:1},
+      {name:"Sled Dog", price:120, key:"dog", value:1},
+      {name:"Mining Tools", price:100, key:"tools", value:1},
+      {name:"Rifle", price:90, key:"rifle", value:1},
+      {name:"Ammo (5)", price:25, key:"ammo", value:5}
+    ];
+
+    const towns = [
+      { name: "Skagway (Gateway)", pos: 50, img:"https://images.unsplash.com/photo-1508766206392-8bd5cf550d1b?auto=format&fit=crop&w=900&q=80" },
+      { name: "Dyea Trading Post", pos: 200, img:"https://images.unsplash.com/photo-1504457046789-8dd0801c1a5c?auto=format&fit=crop&w=900&q=80" },
+      { name: "Carcross", pos: 400, img:"https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=900&q=80" },
+      { name: "Whitehorse", pos: 650, img:"https://images.unsplash.com/photo-1515524738708-327f6b0037a7?auto=format&fit=crop&w=900&q=80" },
+      { name: "Mayo", pos: 900, img:"https://images.unsplash.com/photo-1465101178521-c1a9136a3dda?auto=format&fit=crop&w=900&q=80" },
+      { name: "Dawson City", pos: 1200, img:"https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=900&q=80" }
+    ];
+
+    // Achievements (persistent)
+    const AchievementDefs = [
+      {id:'first_gold', title:'First Gold', desc:'Find any gold.'},
+      {id:'first_town', title:'First Town', desc:'Reach your first town.'},
+      {id:'30_days', title:'Month on Trail', desc:'Survive 30 days.'},
+      {id:'200_days', title:'Veteran', desc:'Survive 200 days.'},
+      {id:'reach_dawson', title:'Klondike!', desc:'Reach Dawson City.'},
+      {id:'sell_100', title:'Trader', desc:'Sell 100 oz of gold.'},
+      {id:'full_party', title:'Lucky Start', desc:'Start with six members.'}
+    ];
+
+    // ===== State & initialization =====
+    function makeInitialParty(count=3){
+      const arr=[];
+      for(let i=0;i<count;i++){
+        const occ = occupations[i % occupations.length];
+        arr.push({
+          name: ['Alice','Bob','Charlie','Daisy','Elijah','Frank'][i] || `Member${i+1}`,
+          health:100,status:"healthy",occupation:occ.name,bonus:occ.bonus,exp:0,level:1,alive:true
+        });
+      }
+      return arr;
+    }
+
+    function getInitialState(){
+      const party = makeInitialParty(3);
+      const bankers = party.filter(p=>p.occupation==="Banker").length;
+      return {
+        party: party,
+        currentPlayerIdx: 0,
+        food: 60 * party.length,
+        clothing: 1 * party.length,
+        money: 1000 + (bankers * 150),
+        medicine: 1 + party.filter(p=>p.occupation==="Doctor").length,
+        tools: false,
+        dog: false,
+        rifle: false,
+        ammo: 0,
+        weather: "Clear",
+        gold: 0,
+        gameOver: false,
+        log: [],
+        day: 1,
+        mealPlan: "normal",
+        progress: 0,
+        distanceTotal: 1200,
+        minDays: 400,
+        maxDays: 600,
+        lastTownNotifiedIdx: -1,
+        pendingMovement: 2,
+        marketPrice: 5 + randInt(0,6),
+        marketHistory: [],
+        autosave: true,
+        difficulty: 'normal', // easy|normal|hard
+        soundOn: false,
+        audioVolume: 0.5,
+        achievements: loadAchievements(),
+        unlockedFeatures: {}
+      };
+    }
+
+    let state = getInitialState();
+
+    // ===== DOM refs =====
+    const dom = {
+      map: document.getElementById('map'),
+      progressFill: document.getElementById('progress-fill'),
+      dayNum: document.getElementById('day-num'),
+      logEntries: document.getElementById('log-entries'),
+      statsRow: document.getElementById('stats-row'),
+      partyList: document.getElementById('party-list'),
+      inventoryContents: document.getElementById('inventory-contents'),
+      gameText: document.getElementById('game-text'),
+      choices: document.getElementById('choices'),
+      eventImgContainer: document.getElementById('event-img-container'),
+      marketPrice: document.getElementById('market-price'),
+      goldDisplay: document.getElementById('gold-display'),
+      mealPlanSelect: document.getElementById('meal-plan-select'),
+      dayRange: document.getElementById('day-range'),
+      achievementsList: document.getElementById('achievements-list'),
+      marketCanvas: document.getElementById('market-graph'),
+      tooltip: document.getElementById('tooltip')
+    };
+
+    // ===== Logging =====
+    function addLog(msg){
+      state.log.unshift(`[Day ${state.day}] ${msg}`);
+      if(state.log.length > 60) state.log.length = 60;
+      updateLog();
+    }
+    function updateLog(){ dom.logEntries.innerHTML = state.log.map(s=>escapeHtml(s)).join("<br>"); }
+
+    // ===== Achievements storage =====
+    function loadAchievements(){
+      try{
+        const raw = localStorage.getItem('alaska_achievements');
+        if(!raw) return {};
+        return JSON.parse(raw);
+      }catch(e){ return {}; }
+    }
+    function saveAchievements(){
+      try{ localStorage.setItem('alaska_achievements', JSON.stringify(state.achievements||{})); }catch(e){}
+    }
+    function grantAchievement(id){
+      if(!state.achievements[id]){
+        state.achievements[id] = { id, date: (new Date()).toISOString() };
+        addLog(`Achievement unlocked: ${AchievementDefs.find(a=>a.id===id).title}`);
+        saveAchievements();
+        updateAchievementsUI();
+      }
+    }
+
+    function updateAchievementsUI(){
+      dom.achievementsList.innerHTML = AchievementDefs.map(a=>{
+        const got = state.achievements && state.achievements[a.id];
+        return `<div><span class="${got ? 'achieved' : ''}">${escapeHtml(a.title)}</span> - <span class="small">${escapeHtml(a.desc)}</span>${got ? ` <span class="small">(${new Date(got.date).toLocaleDateString()})</span>` : ''}</div>`;
+      }).join('');
+    }
+
+    // ===== UI updates =====
+    function updateStatsUI(){
+      dom.dayNum.innerText = state.day;
+      dom.progressFill.style.width = `${Math.min(100, Math.round((state.progress/state.distanceTotal)*100))}%`;
+      dom.marketPrice.innerText = `$${state.marketPrice}/oz`;
+      dom.goldDisplay.innerText = `${state.gold} oz gold`;
+      dom.dayRange.innerText = `Target days: ${state.minDays}-${state.maxDays}`;
+      // stats row content
+      const alive = state.party.filter(p=>p.alive).length;
+      dom.statsRow.innerHTML = `
+        <div class="item"><b>Alive:</b> ${alive}/${state.party.length}</div>
+        <div class="item"><b>Food:</b> ${state.food}</div>
+        <div class="item"><b>Clothing:</b> ${state.clothing}</div>
+        <div class="item"><b>Money:</b> $${state.money}</div>
+        <div class="item"><b>Medicine:</b> ${state.medicine}</div>
+        <div class="item"><b>Dog:</b> ${state.dog ? 'Yes' : 'No'}</div>
+        <div class="item"><b>Rifle/Ammo:</b> ${state.rifle ? 'Yes ('+state.ammo+' ammo)' : 'No'}</div>
+        <div class="item"><b>Weather:</b> ${state.weather}</div>
+      `;
+      // inventory
+      const inv = [];
+      if(state.tools) inv.push("Mining tools");
+      if(state.dog) inv.push("Sled dog");
+      if(state.rifle) inv.push("Rifle ("+state.ammo+" ammo)");
+      if(state.gold>0) inv.push(`${state.gold} oz gold`);
+      dom.inventoryContents.innerHTML = inv.length ? inv.join(", ") : "None";
+
+      // party list table
+      let html = `<table><thead><tr><th>Name</th><th>Job</th><th>Health</th><th>Status</th><th>Lvl/XP</th></tr></thead><tbody>`;
+      state.party.forEach((p,i)=>{
+        html += `<tr${!p.alive ? ' class="dead"' : ''}>
+          <td>${state.gameOver ? escapeHtml(p.name) : `<input class="rename-input" data-pidx="${i}" value="${escapeHtml(p.name)}">`}</td>
+          <td>${state.gameOver ? escapeHtml(p.occupation) : `<select class="job-select" data-pidx="${i}">${occupations.map(o=>`<option value="${o.name}"${o.name===p.occupation?' selected':''}>${o.name}</option>`).join('')}</select>`}</td>
+          <td>${p.health}</td>
+          <td>${escapeHtml(p.status)}</td>
+          <td>Lv.${p.level} (${p.exp}/100)</td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+      dom.partyList.innerHTML = html;
+
+      // wire up selects and rename inputs
+      document.querySelectorAll('.job-select').forEach(sel=>{
+        sel.onchange = function(){
+          const idx = parseInt(this.dataset.pidx,10);
+          state.party[idx].occupation = this.value;
+          addLog(`${state.party[idx].name} became a ${this.value}.`);
+        };
+      });
+      document.querySelectorAll('.rename-input').forEach(inp=>{
+        inp.onblur = function(){
+          const idx = parseInt(this.dataset.pidx,10);
+          const newName = this.value.trim() || state.party[idx].name;
+          if(newName !== state.party[idx].name){
+            state.party[idx].name = newName;
+            addLog(`${newName} renamed.`);
+            updateStatsUI();
+          }
+        };
+        inp.onkeydown = function(e){ if(e.key === 'Enter') this.blur(); };
+      });
+    }
+
+    // ===== Map rendering and tooltip behavior =====
+    function renderMap(){
+      dom.map.innerHTML = '';
+      const total = state.distanceTotal;
+      towns.forEach((t,i)=>{
+        const pct = (t.pos/total) * 100;
+        const marker = document.createElement('div');
+        marker.className = 'town-marker';
+        marker.style.left = `${pct}%`;
+        marker.dataset.townIndex = i;
+        marker.innerHTML = `<div class="dot"></div><div style="font-size:11px;margin-top:4px">${t.name.split(' ')[0]}</div>`;
+        dom.map.appendChild(marker);
+
+        // tooltip behavior
+        marker.onmouseenter = (ev) => {
+          showTooltip(`${t.name} — position ${t.pos}`, ev.pageX, ev.pageY);
+        };
+        marker.onmousemove = (ev) => { moveTooltip(ev.pageX, ev.pageY); };
+        marker.onmouseleave = hideTooltip;
+
+        marker.onclick = ()=> openTown(i);
+      });
+
+      // "You" indicator
+      const posEl = document.createElement('div');
+      posEl.style.position='absolute';
+      posEl.style.left = `${Math.min(99.5,(state.progress/state.distanceTotal)*100)}%`;
+      posEl.style.bottom='6px';
+      posEl.style.transform='translateX(-50%)';
+      posEl.style.fontSize='12px';
+      posEl.innerHTML = `<div style="background:#ffef9a;padding:4px 6px;border-radius:6px;border:1px solid #d9c77a">You</div>`;
+      dom.map.appendChild(posEl);
+    }
+
+    function showTooltip(text,x,y){
+      const tt = document.getElementById('tooltip');
+      tt.innerText = text;
+      tt.style.left = (x+12)+'px';
+      tt.style.top = (y+12)+'px';
+      tt.style.opacity = '1';
+    }
+    function moveTooltip(x,y){
+      const tt = document.getElementById('tooltip');
+      tt.style.left = (x+12)+'px';
+      tt.style.top = (y+12)+'px';
+    }
+    function hideTooltip(){
+      const tt = document.getElementById('tooltip');
+      tt.style.opacity = '0';
+    }
+
+    // ===== Market graph drawing =====
+    const marketCanvas = dom.marketCanvas;
+    const mctx = marketCanvas.getContext('2d');
+    function resizeMarketCanvas(){ marketCanvas.width = marketCanvas.clientWidth; marketCanvas.height = marketCanvas.clientHeight; drawMarket(); }
+    function drawMarket(){
+      mctx.clearRect(0,0,marketCanvas.width,marketCanvas.height);
+      const hist = state.marketHistory.slice(-60);
+      if(hist.length < 2) return;
+      const w = marketCanvas.width, h = marketCanvas.height;
+      const max = Math.max(...hist), min = Math.min(...hist);
+      mctx.strokeStyle = '#2a80d1'; mctx.lineWidth = 2; mctx.beginPath();
+      hist.forEach((p,i)=>{
+        const x = (i/(hist.length-1))*w;
+        const y = h - ((p - min) / Math.max(1,(max-min)))*h;
+        if(i===0) mctx.moveTo(x,y); else mctx.lineTo(x,y);
+      });
+      mctx.stroke();
+      // draw latest price
+      const latest = hist[hist.length-1];
+      mctx.fillStyle = '#1b5f8a';
+      mctx.fillText(`$${latest}/oz`, Math.max(4,w-60), 12);
+    }
+    window.addEventListener('resize', resizeMarketCanvas);
+
+    // ===== Gameplay core functions (movement, events, consumption) =====
+    function partyDamage(stateObj,dmg){
+      stateObj.party.forEach(p=>{
+        if(!p.alive) return;
+        p.health = clamp(p.health - dmg, 0, 200);
+        if(p.health <= 0 && p.alive){ p.alive=false; p.status='dead'; addLog(`${p.name} has died.`); }
+      });
+    }
+    function partyHealOne(stateObj,amt=10){
+      for(const p of stateObj.party){
+        if(p.alive && p.health < 100){ p.health = Math.min(100, p.health + amt); return p.name; }
+      }
+      return null;
+    }
+
+    // random event pool (expanded, tuned by difficulty)
+    const randomEventPool = [
+      function avalancheEvent(){
+        partyDamage(state, randInt(10,28));
+        state.food = Math.max(0, state.food - randInt(5,18) * state.party.filter(p=>p.alive).length);
+        addLog("An avalanche thunders down the mountainside! Supplies lost and injuries.");
+        return { text: "An avalanche thunders down the mountainside! Your camp is hit.", img:"https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=900&q=80" };
+      },
+      function wolfAttackEvent(){
+        if(state.rifle && state.ammo > 1){
+          state.ammo = Math.max(0, state.ammo - 2);
+          partyDamage(state, randInt(0,12));
+          addLog("Wolves attack but you fight them off using rifles.");
+          return { text:"Wolves ambush your camp but you fight them off with rifles." };
+        } else if(state.dog){
+          state.dog=false;
+          partyDamage(state, randInt(9,18));
+          addLog("Your sled dog distracts the wolves but runs off.");
+          return { text:"Wolves attack; your sled dog distracts them but is gone." };
+        } else {
+          partyDamage(state, randInt(16,34));
+          addLog("Wolves attack and maul some of the party.");
+          return { text:"A savage wolf attack! Many were hurt." };
+        }
+      },
+      function brokenSledEvent(){
+        const carpenter = state.party.find(p=>p.occupation==="Carpenter" && p.alive);
+        if(carpenter && chance(0.7)){
+          addLog("Carpenter repairs a damaged sled before worse damage.");
+          return { text:"A sled axle cracks but the Carpenter repairs it." };
+        } else {
+          partyDamage(state, randInt(6,20));
+          if(state.tools && chance(0.5)){ state.tools = false; addLog("Tools were damaged and are now broken."); }
+          addLog("A sled breaks and supplies scatter; repairs are difficult.");
+          return { text:"A sled breaks and your supplies are scattered." };
+        }
+      },
+      function stolenEvent(){
+        const merchant = state.party.find(p=>p.occupation==="Merchant" && p.alive);
+        if(merchant && chance(0.6)){
+          const loss = Math.floor((10 + Math.random()*20) * state.party.filter(p=>p.alive).length);
+          state.money = Math.max(0, state.money - loss);
+          addLog("Thieves try to rob you but Merchant mitigates most loss.");
+          return { text:"Thieves targeted you but a Merchant calms the situation." };
+        } else {
+          const loss = Math.floor((40 + Math.random()*120) * state.party.filter(p=>p.alive).length);
+          state.money = Math.max(0, state.money - loss);
+          partyDamage(state, randInt(4,14));
+          addLog("Thieves rob the camp; money and supplies are lost.");
+          return { text:"Your camp is raided; you lose money and supplies." };
+        }
+      },
+      function foundCabinEvent(){
+        const foundFood = randInt(10,40) * state.party.filter(p=>p.alive).length;
+        state.food += foundFood;
+        if(chance(0.4)) state.medicine += 1;
+        addLog("You find an abandoned cabin with helpful supplies.");
+        return { text:"You find an abandoned cabin with supplies!" };
+      },
+      function swollenRiverEvent(){
+        partyDamage(state, randInt(2,10));
+        state.food = Math.max(0, state.food - randInt(3,12) * state.party.filter(p=>p.alive).length);
+        addLog("A swollen river delays the party and washes away some supplies.");
+        return { text:"A swollen river forces you to halt and work to cross." };
+      },
+      function stampedeEvent(){
+        partyDamage(state, randInt(6,22));
+        if(chance(0.25)) state.food = Math.max(0, state.food - randInt(2,8) * state.party.filter(p=>p.alive).length);
+        addLog("A sudden stampede scatters the camp!");
+        return { text:"A stampede of wild animals rushes through; chaos follows." };
+      },
+      function riverPanEvent(){
+        let base = randInt(1,6) * state.party.filter(p=>p.alive).length;
+        if(state.party.some(p=>p.occupation==="Miner" && p.alive)) base = Math.floor(base * 1.6);
+        state.gold += base;
+        addLog("You pan along a river and find some gold.");
+        grantAchievement('first_gold');
+        return { text:`You pan in a river and find ${base} oz of gold.` };
+      }
+    ];
+
+    // ===== Difficulty presets (affect event chance, consumption, market volatility) =====
+    const DifficultyProfile = {
+      easy: { eventModifier: 0.7, foodMultiplier: 0.9, marketVol: 0.8, startFoodBonus: 30 },
+      normal: { eventModifier: 1.0, foodMultiplier: 1.0, marketVol: 1.0, startFoodBonus: 0 },
+      hard: { eventModifier: 1.3, foodMultiplier: 1.15, marketVol: 1.4, startFoodBonus: -10 }
+    };
+
+    function applyDifficultyProfile(){
+      const prof = DifficultyProfile[state.difficulty];
+      // adjust market volatility scaling and food consumption will be applied in advanceDay
+      // store profile on state for reference
+      state._difficulty_profile = prof;
+    }
+
+    // ===== Market mechanics =====
+    function updateMarketDaily(){
+      const prof = state._difficulty_profile || DifficultyProfile.normal;
+      // random walk with volatility
+      const vol = Math.max(1, Math.round(prof.marketVol * 2));
+      const delta = randInt(-1*vol, 2*vol);
+      // Merchant presence biases price up when selling
+      const merchant = state.party.find(p=>p.occupation==="Merchant" && p.alive);
+      const bias = merchant ? 1 : 0;
+      state.marketPrice = Math.max(2, state.marketPrice + delta + bias);
+      state.marketHistory.push(state.marketPrice);
+      if(state.marketHistory.length > 240) state.marketHistory.shift();
+      drawMarket();
+    }
+
+    // ===== Core daily advancement (tuned) =====
+    function randomWeather(){
+      const idx = randInt(0, weatherTypes.length-1);
+      const w = weatherTypes[idx];
+      state.weather = w.name;
+      const effect = w.effect();
+      // amplify by difficulty
+      const prof = state._difficulty_profile || DifficultyProfile.normal;
+      if(effect < 0) partyDamage(state, Math.ceil(Math.abs(effect) * prof.eventModifier));
+      addLog(w.text);
+    }
+
+    function advanceDay(movementOverride, contextMessage){
+      const prof = state._difficulty_profile || DifficultyProfile.normal;
+      const movement = typeof movementOverride === 'number' ? movementOverride : (state.pendingMovement || 2);
+      state.day++;
+      const moveApplied = clamp(movement,1,3);
+      state.progress += moveApplied;
+
+      // market daily
+      updateMarketDaily();
+
+      randomWeather();
+
+      // food consumption & meal plan, difficulty affects consumption
+      const aliveCount = state.party.filter(p=>p.alive).length;
+      const mp = state.mealPlan || 'normal';
+      let foodPerPerson = 1;
+      let dailyHealthMod = 0;
+      if(mp==='hearty'){ foodPerPerson = 1.5; dailyHealthMod = -2; }
+      if(mp==='barebones'){ foodPerPerson = 0.6; dailyHealthMod = 3; }
+      if(state.party.some(p=>p.occupation==="Hunter" && p.alive)) foodPerPerson *= 0.95;
+      // difficulty multiplier
+      foodPerPerson *= prof.foodMultiplier;
+      const totalFoodNeeded = Math.ceil(aliveCount * foodPerPerson);
+      if(state.food < totalFoodNeeded){
+        partyDamage(state, Math.ceil(24 * prof.eventModifier));
+        state.food = 0;
+        addLog("You are starving!");
+      } else {
+        state.food -= totalFoodNeeded;
+      }
+      if(dailyHealthMod !== 0){
+        partyDamage(state, dailyHealthMod);
+        if(dailyHealthMod < 0) addLog("Hearty meals improve health a bit.");
+      }
+      if(state.clothing < aliveCount){
+        partyDamage(state, 7 * (aliveCount - state.clothing));
+        addLog("Lack of clothing costs health in the cold.");
+      }
+
+      // XP & leveling
+      state.party.forEach(p=>{
+        if(!p.alive) return;
+        let xpGain = 6;
+        if(p.occupation === "Miner") xpGain += 4;
+        if(p.occupation === "Hunter") xpGain += 4;
+        if(p.occupation === "Doctor") xpGain += 2;
+        p.exp += xpGain;
+        if(p.exp >= 100){
+          p.exp -= 100; p.level++;
+          addLog(`${p.name} leveled up as a ${p.occupation} to level ${p.level}!`);
+          if(p.occupation === "Miner"){ state.gold += 2 * p.level; addLog(`${p.name} finds a little extra gold.`); grantAchievement('first_gold'); }
+          if(p.occupation === "Hunter"){ state.food += 3 * p.level; addLog(`${p.name} brings meat.`); }
+          if(p.occupation === "Doctor"){ const healed = partyHealOne(state, 8 * p.level); if(healed) addLog(`Doctor ${p.name} treats ${healed}.`); }
+        }
+      });
+
+      // sickness chance
+      let sicknessChance = 0.12 * prof.eventModifier;
+      if(state.party.some(p=>p.occupation==="Doctor" && p.alive)) sicknessChance *= 0.6;
+      if(chance(sicknessChance) && state.day > 1){
+        const idx = randInt(0, state.party.length-1);
+        if(state.party[idx].alive){
+          state.party[idx].status = 'sick';
+          state.party[idx].health -= randInt(8,20);
+          addLog(`${state.party[idx].name} becomes sick!`);
+          if(state.medicine > 0){
+            state.medicine--;
+            state.party[idx].health += 12;
+            state.party[idx].status = 'healthy';
+            addLog(`${state.party[idx].name} uses medicine and recovers a bit.`);
+          }
+        }
+      }
+      if(state.day % 7 === 0){
+        const doctor = state.party.find(p=>p.occupation==="Doctor" && p.alive);
+        if(doctor){
+          const healed = partyHealOne(state, 10);
+          if(healed) addLog(`Doctor ${doctor.name} heals ${healed}.`);
+        }
+      }
+
+      // Random event
+      const baseEventChance = 0.14 * prof.eventModifier;
+      let eventChance = baseEventChance;
+      if(state.party.some(p=>p.occupation==="Merchant" && p.alive)) eventChance *= 0.9;
+      if(chance(eventChance)){
+        const evIdx = randInt(0, randomEventPool.length-1);
+        const ev = randomEventPool[evIdx]();
+        if(ev && ev.text){
+          setGameText(ev.text);
+          setEventImage(ev.img || '');
+          setChoices([{ text: "Continue", next: "docks" }]);
+        }
+      }
+
+      // death checks
+      state.party.forEach(p=>{
+        if(p.alive && p.health <= 0){ p.alive=false; p.status='dead'; addLog(`${p.name} has died.`); }
+      });
+
+      // town arrival
+      towns.forEach((t,i)=>{
+        if(state.progress >= t.pos && i > state.lastTownNotifiedIdx){
+          state.lastTownNotifiedIdx = i;
+          grantAchievement('first_town');
+          setEventImage(t.img);
+          setGameText(`You reach ${t.name}. Market and services are available.`);
+          setChoices([
+            { text: "Visit market (trade)", next: "town_trade", movement:0 },
+            { text: "Pan for gold", next: "pan_for_gold", movement:0 },
+            { text: "Rest in town", next: "town_rest", movement:0 },
+            { text: "Leave town", next: "docks", movement:0 }
+          ]);
+          updateAll();
+        }
+      });
+
+      // arrival or fail
+      if(state.progress >= state.distanceTotal){
+        handleArrival();
+        return;
+      }
+      if(state.day > state.maxDays){
+        endGame(`You failed to reach Dawson City within ${state.maxDays} days. The expedition collapses.`, false);
+        return;
+      }
+      if(state.party.filter(p=>p.alive).length < 1){
+        endGame("All party members have died. The expedition ends.", false);
+        return;
+      }
+
+      if(contextMessage) addLog(contextMessage);
+      updateAll();
+
+      // autosave
+      if(state.autosave) saveSlot('_autosave');
+    }
+
+    // ===== Actions and minigames =====
+    function handlePanMinigame(){
+      // present a timing minigame: moving cursor across a bar; clicking near golden zone yields more gold
+      showMinigame("Pan for Gold", (container, buttons)=>{
+        // build UI
+        const bar = document.createElement('div');
+        bar.style.width='100%'; bar.style.height='28px'; bar.style.background='#eef'; bar.style.borderRadius='6px'; bar.style.position='relative'; bar.style.margin='8px 0';
+        const cursor = document.createElement('div'); cursor.style.width='8px'; cursor.style.height='28px'; cursor.style.background='#d90'; cursor.style.position='absolute'; cursor.style.left='0';
+        const goldenZone = document.createElement('div'); goldenZone.style.position='absolute'; goldenZone.style.height='100%'; goldenZone.style.background='linear-gradient(90deg,#ffd57a,#ffd19a)'; goldenZone.style.borderRadius='6px';
+        bar.appendChild(goldenZone); bar.appendChild(cursor);
+        container.appendChild(bar);
+
+        // set golden zone range randomly biased by miners
+        const alive = state.party.filter(p=>p.alive).length;
+        const miner = state.party.find(p=>p.occupation==="Miner" && p.alive);
+        const zoneSize = miner ? 0.12 : 0.09; // proportion of bar
+        const zoneStart = Math.random() * (1 - zoneSize);
+        goldenZone.style.left = (zoneStart*100)+'%';
+        goldenZone.style.width = (zoneSize*100)+'%';
+
+        // movement
+        let pos = 0;
+        let dir = 1;
+        const speed = 0.01 + (Math.random()*0.02); // per frame
+        let running = true;
+        function frame(){
+          if(!running) return;
+          pos += speed * dir;
+          if(pos >= 1){ pos = 1; dir = -1; }
+          if(pos <= 0){ pos = 0; dir = 1; }
+          cursor.style.left = (pos*100)+'%';
+          requestAnimationFrame(frame);
+        }
+        frame();
+
+        const stopBtn = document.createElement('button'); stopBtn.className='muted-btn'; stopBtn.innerText='Stop';
+        stopBtn.onclick = ()=>{
+          running = false;
+          // evaluate result
+          const hit = (pos >= zoneStart && pos <= zoneStart + zoneSize);
+          const base = randInt(1,6) * alive;
+          const found = miner ? Math.floor(base * 1.6) : base;
+          if(hit){
+            state.gold += found + 3;
+            addLog(`Successful pan minigame! You find ${found+3} oz.`);
+            setGameText(`You hit the rich spot and find ${found+3} oz of gold.`);
+            grantAchievement('first_gold');
+          } else {
+            // smaller find or none
+            const small = Math.random() < 0.4 ? Math.floor(found/2) : 0;
+            state.gold += small;
+            addLog(`Pan attempt yielded ${small} oz.`);
+            setGameText(`You found ${small} oz of gold.`);
+          }
+          closeMinigame();
+          advanceDay(1);
+        };
+        buttons.appendChild(stopBtn);
+
+        const cancelBtn = document.createElement('button'); cancelBtn.className='muted-btn'; cancelBtn.innerText='Cancel';
+        cancelBtn.onclick = ()=>{ closeMinigame(); addLog('Pan cancelled.'); };
+        buttons.appendChild(cancelBtn);
+      });
+    }
+
+    function handleHuntMinigame(){
+      // simple target minigame: target moves randomly; click to shoot. You get 3 shots within 6 seconds; hits give food.
+      showMinigame("Hunt Minigame", (container, buttons)=>{
+        const area = document.createElement('div');
+        area.style.width='100%'; area.style.height='160px'; area.style.background='#eef6ee'; area.style.borderRadius='6px'; area.style.position='relative'; area.style.overflow='hidden';
+        container.appendChild(area);
+        const target = document.createElement('div');
+        target.style.width='36px'; target.style.height='36px'; target.style.borderRadius='50%'; target.style.background='#b44'; target.style.position='absolute';
+        area.appendChild(target);
+
+        let shots = 3, hits = 0;
+        const hunter = state.party.find(p=>p.occupation==="Hunter" && p.alive);
+        const alive = state.party.filter(p=>p.alive).length;
+        let intervalId;
+        function moveTarget(){
+          const x = Math.random() * (area.clientWidth - 36);
+          const y = Math.random() * (area.clientHeight - 36);
+          target.style.left = x + 'px'; target.style.top = y + 'px';
+        }
+        intervalId = setInterval(moveTarget, 900);
+        moveTarget();
+
+        const info = document.createElement('div'); info.className='small'; info.style.marginTop='8px'; info.innerText = `Shots left: ${shots}`;
+        container.appendChild(info);
+
+        function shoot(e){
+          const rect = area.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const tx = parseFloat(target.style.left);
+          const ty = parseFloat(target.style.top);
+          const dx = x - (tx + 18), dy = y - (ty + 18);
+          const dist = Math.sqrt(dx*dx+dy*dy);
+          const hit = dist <= 28; // radius
+          shots--;
+          if(hit){
+            hits++;
+            addLog("Hunt minigame: you hit the target!");
+          } else {
+            addLog("Hunt minigame: missed.");
+          }
+          info.innerText = `Shots left: ${shots} | Hits: ${hits}`;
+          if(shots <= 0){
+            clearInterval(intervalId);
+            area.removeEventListener('click', shoot);
+            // compute reward
+            let foodGain = (hits * randInt(6,12)) * alive;
+            if(hunter) foodGain = Math.floor(foodGain * 1.4);
+            if(hits > 0){
+              state.food += foodGain;
+              addLog(`Hunt success: +${foodGain} food.`);
+              setGameText(`Hunt complete. You brought back ${foodGain} food.`);
+            } else {
+              // failure penalty
+              partyDamage(state, randInt(2,8));
+              setGameText("The hunt failed and cost you time and energy.");
+            }
+            closeMinigame();
+            advanceDay(1);
+          }
+        }
+        area.addEventListener('click', shoot);
+
+        const cancelBtn = document.createElement('button'); cancelBtn.className='muted-btn'; cancelBtn.innerText='Abort';
+        cancelBtn.onclick = ()=>{
+          clearInterval(intervalId);
+          area.removeEventListener('click', shoot);
+          closeMinigame();
+          addLog('Hunt aborted.');
+        };
+        buttons.appendChild(cancelBtn);
+      });
+    }
+
+    // ===== Minigame modal helpers =====
+    const modal = document.getElementById('minigame-modal');
+    const mgTitle = document.getElementById('minigame-title');
+    const mgBody = document.getElementById('minigame-body');
+    const mgButtons = document.getElementById('minigame-buttons');
+
+    function showMinigame(title, builder){
+      mgTitle.innerText = title;
+      mgBody.innerHTML = '';
+      mgButtons.innerHTML = '';
+      modal.classList.add('show');
+      builder(mgBody, mgButtons);
+    }
+    function closeMinigame(){
+      modal.classList.remove('show');
+      mgBody.innerHTML = '';
+      mgButtons.innerHTML = '';
+    }
+    // close modal clicking backdrop
+    modal.addEventListener('click', (e)=>{ if(e.target === modal) closeMinigame(); });
+
+    // ===== Market selling & buy UI =====
+    function sellGold(amount){
+      amount = Math.min(amount, state.gold);
+      if(amount <= 0){ addLog("No gold to sell."); return; }
+      const merchant = state.party.find(p=>p.occupation==="Merchant" && p.alive);
+      const price = state.marketPrice * (merchant ? 1.08 : 1.0);
+      const gained = Math.floor(amount * price);
+      state.gold -= amount;
+      state.money += gained;
+      addLog(`Sold ${amount} oz for $${gained} ($${price.toFixed(2)}/oz).`);
+      if(amount >= 1) grantAchievement('sell_100'); // will check later for totals
+      updateAll();
+    }
+
+    function sellGoldPrompt(defaultAmt){
+      const amtStr = prompt("How many oz to sell?", defaultAmt || Math.min(state.gold,10));
+      const amt = parseInt(amtStr,10);
+      if(!isNaN(amt) && amt > 0) sellGold(amt);
+      else addLog("Sale cancelled.");
+    }
+
+    // ===== Town interactions =====
+    function openTown(index){
+      const town = towns[index];
+      if(state.progress < town.pos){
+        addLog(`You are not yet at ${town.name}.`);
+        return;
+      }
+      setEventImage(town.img || '');
+      setGameText(`You reach ${town.name}. Market and services are available.`);
+      setChoices([
+        { text: `Sell Gold (${state.gold} oz)`, action: ()=> sellGoldPrompt(Math.min(state.gold,10)), next:"docks" },
+        { text: "Pan for gold (minigame)", action: ()=> handlePanMinigame(), next:"docks" },
+        { text: "Rest in town (resupply)", action: ()=>{ state.food += 30; state.clothing += 1; state.money = Math.max(0, state.money - 30); addLog('Resupplied in town (spent cash).'); }, next:"docks" },
+        { text: "Leave town", next:"docks" }
+      ]);
+    }
+
+    // ===== Choices rendering and handling (preserve features) =====
+    function setChoices(choices){
+      dom.choices.innerHTML = '';
+      if(!Array.isArray(choices) || choices.length === 0){
+        const btn = document.createElement('button'); btn.className='choice-btn'; btn.innerText='Continue'; btn.onclick = ()=> addLog('Nothing to do'); dom.choices.appendChild(btn); return;
+      }
+      choices.forEach(ch=>{
+        const btn = document.createElement('button'); btn.className='choice-btn'; btn.innerText = ch.text || 'Choose';
+        btn.onclick = ()=>{
+          try{
+            // run action if present
+            if(ch.action) ch.action(state);
+            // special handling
+            if(ch.next === 'pan_for_gold'){ handlePanMinigame(); return; }
+            if(ch.next === 'town_trade'){ // quick market UI
+              setGameText('Market:'); setChoices([
+                { text:"Buy food $40 (+20)", action: ()=>{ if(state.money>=40){ state.money-=40; state.food+=20; addLog('Bought food.'); } else addLog('Not enough money.'); }, next:"docks" },
+                { text:"Buy medicine $50 (+1)", action: ()=>{ if(state.money>=50){ state.money-=50; state.medicine+=1; addLog('Bought medicine.'); } else addLog('Not enough money.'); }, next:"docks" },
+                { text:"Sell gold", action: ()=> sellGoldPrompt(Math.min(state.gold,10)), next:"docks" },
+                { text:"Leave market", next:"docks" }
+              ]); return;
+            }
+            if(ch.next === 'town_rest'){ state.food = Math.max(0, state.food-10); state.party.forEach(p=>{ if(p.alive) p.health = Math.min(100, p.health + 10); }); addLog('Rested in town.'); advanceDay(1); return; }
+
+            // default: set pending movement and advance day
+            state.pendingMovement = typeof ch.movement === 'number' ? ch.movement : movementForChoiceId(ch.next);
+            advanceDay(undefined);
+            // after advancing: show generic next choices if docks
+            if(ch.next === 'docks' || !ch.next){
+              setEventImage('');
+              setGameText("You continue on the trail. Choose your next action:");
+              setChoices([
+                { text:"Proceed onward", next:"docks", movement:2 },
+                { text:"Scavenge along the way", action: ()=> handleScavenge(), next:"docks" },
+                { text:"Hunt (minigame)", action: ()=> handleHuntMinigame(), next:"docks" },
+                { text:"Build Raft", action: ()=> handleBuildRaft(), next:"docks" }
+              ]);
+            }
+          }catch(e){ console.error(e); addLog('Error handling choice'); }
+        };
+        dom.choices.appendChild(btn);
+      });
+    }
+
+    function movementForChoiceId(next){
+      const mapping = {
+        "fast_climb":3, "fast_move":3, "push_on":3,
+        "slow_climb":2, "docks":2, "lake_bennett":2, "pay_ferry":2, "raft_build":2,
+        "scavenge_climb":1, "climb_scavenge_outcome":1, "fish_bennett":1,
+        "whitehorse":2, "whitehorse_scavenge":1, "whitehorse_hunt":1
+      };
+      return mapping[next] || 2;
+    }
+
+    // ===== Actions quick handlers (scavenge, hunt, rest, build raft) =====
+    function handleScavenge(){
+      const alive = state.party.filter(p=>p.alive).length;
+      if(alive === 0){ addLog("No one to scavenge."); return; }
+      const roll = Math.random();
+      if(roll < 0.4){ const found = randInt(8,28) * alive; state.food += found; advanceDay(1, `Scavenge found +${found} food.`); setGameText(`Scavenge found: +${found} food.`); addLog('Scavenge success.'); }
+      else if(roll < 0.67){ state.medicine += 1 * alive; advanceDay(1, 'Scavenge found medicine.'); setGameText('You find medicine while scavenging.'); addLog('Found medicine.'); }
+      else if(roll < 0.91){ partyDamage(state, randInt(8,20)); advanceDay(1, 'Scavenge injured some.'); setGameText('A mishap injured some during scavenge.'); addLog('Scavenge injury.'); }
+      else { if(!state.rifle){ state.rifle = true; state.ammo += 3 * alive; advanceDay(1, 'You find a rifle and ammo!'); setGameText('Found a rifle and ammo!'); addLog('Found weapon.'); } else { const g = randInt(2,10)*alive; state.gold += g; advanceDay(1, `You find ${g} oz gold while scavenging.`); setGameText(`Found ${g} oz of gold.`); addLog('Found gold while scavenging.'); } }
+    }
+
+    function handleBuildRaft(){
+      const carpenter = state.party.find(p=>p.occupation==="Carpenter" && p.alive);
+      if(state.tools || (carpenter && chance(0.8))){
+        if(chance(0.18)){ partyDamage(state, randInt(8,20)); state.food = Math.max(0, state.food - (10 * state.party.filter(p=>p.alive).length)); advanceDay(2, 'Rapids overturned raft; supplies lost.'); setGameText('Rapids overturned the raft — supplies lost.'); addLog('Raft overturned.'); }
+        else { advanceDay(2, 'You build a sturdy raft and travel safely.'); setGameText('You build a sturdy raft and travel safely.'); addLog('Built and used raft.'); }
+      } else {
+        partyDamage(state, randInt(12,32));
+        advanceDay(1, 'Poorly built raft injures the party.'); setGameText('You attempt to build a raft without tools and are injured.'); addLog('Attempted raft without tools; injured.'); }
+    }
+
+    // ===== Minigame triggers from quick-action buttons =====
+    document.getElementById('q-pan').addEventListener('click', ()=> handlePanMinigame());
+    document.getElementById('q-hunt').addEventListener('click', ()=> handleHuntMinigame());
+    document.getElementById('q-scavenge').addEventListener('click', ()=> handleScavenge());
+    document.getElementById('q-rest').addEventListener('click', ()=> { handleRest(); });
+    document.getElementById('q-build-raft').addEventListener('click', ()=> handleBuildRaft());
+    document.getElementById('q-trade').addEventListener('click', ()=> {
+      setGameText('Quick Trade Menu');
+      setChoices([
+        { text:"Buy food $40 (+20)", action: ()=>{ if(state.money>=40){ state.money-=40; state.food+=20; addLog('Bought food.'); } else addLog('Not enough money.'); }, next:"docks" },
+        { text:"Buy medicine $50", action: ()=>{ if(state.money>=50){ state.money-=50; state.medicine+=1; addLog('Bought medicine.'); } else addLog('Not enough money.'); }, next:"docks" },
+        { text:"Sell gold", action: ()=> sellGoldPrompt(Math.min(state.gold,10)), next:"docks" },
+        { text:"Leave", next:"docks" }
+      ]);
+    });
+
+    function handleRest(){
+      const alive = state.party.filter(p=>p.alive).length;
+      if(alive===0){ addLog("No one to rest."); return; }
+      const foodNeeded = Math.ceil(alive * 1.1 * (state._difficulty_profile ? state._difficulty_profile.foodMultiplier : 1));
+      if(state.food >= foodNeeded){
+        state.food -= foodNeeded;
+        state.party.forEach(p=>{ if(p.alive) p.health = Math.min(100, p.health + randInt(6,14)); });
+        advanceDay(1, 'You rest and recover some health.');
+        setGameText('You rest and recover health.');
+        addLog('Rest healed party a bit.');
+      } else {
+        partyDamage(state, 8);
+        advanceDay(1, 'You lacked food while resting and lost health.');
+        setGameText('Not enough food while resting; health suffers.');
+        addLog('Rest with insufficient food hurt party.');
+      }
+    }
+
+    // ===== Arrival and endgame =====
+    function handleArrival(){
+      const living = state.party.filter(p=>p.alive).length;
+      if(living === 0){ endGame("All party members died before arrival.", false); return; }
+      const groupHealth = state.party.reduce((s,p)=> p.alive ? s+p.health : s, 0) / living;
+      let outcome = "";
+      if(groupHealth <= 20) outcome = "You stagger into Dawson City, half-dead and frostbitten. ";
+      else if(state.food < 5 * living) outcome = "You arrive hungry and exhausted. ";
+      else outcome = "You reach Dawson City, the gold fields in sight! ";
+      const goldFound = Math.random() < 0.85;
+      const miner = state.party.find(p=>p.occupation==="Miner" && p.alive);
+      if(goldFound && (state.tools || miner)){
+        let ounces = Math.floor(10 + Math.random()*30) * living;
+        if(miner) ounces = Math.floor(ounces * 1.2);
+        state.gold += ounces;
+        outcome += `With tools and skill you find ${ounces} oz of gold!`;
+      } else if(goldFound){
+        let ounces = Math.floor(2 + Math.random()*8) * living;
+        state.gold += ounces;
+        outcome += `You find some gold (${ounces} oz).`;
+      } else outcome += "But the claims are mostly taken.";
+      outcome += `\nSurvivors: ${living}/${state.party.length} | Total gold: ${state.gold} oz.`;
+      grantAchievement('reach_dawson');
+      endGame(outcome, true);
+    }
+
+    function endGame(text, success){
+      state.gameOver = true;
+      setEventImage('');
+      setGameText(text + (success ? "\n\nYou completed the journey." : "\n\nGame Over."));
+      setChoices([{ text: "Restart", action: ()=> startGame() }]);
+      addLog("Game ended.");
+      if(state.autosave) saveSlot('_autosave');
+      // check some achievements
+      if(state.day >= 30) grantAchievement('30_days');
+      if(state.day >= 200) grantAchievement('200_days');
+      if(state.party.length >= 6) grantAchievement('full_party');
+    }
+
+    // ===== Saving & loading (keep previous features) =====
+    function saveSlot(slotKey){
+      try{
+        // keep achievements externally persisted
+        const snapshot = JSON.parse(JSON.stringify(state));
+        // don't save certain DOM or functions
+        snapshot._difficulty_profile = undefined;
+        localStorage.setItem('alaska_save_' + slotKey, JSON.stringify(snapshot));
+        addLog(`Saved to slot ${slotKey}`);
+      }catch(e){ addLog("Save failed: "+e.message); }
+    }
+    function loadSlot(slotKey){
+      try{
+        const raw = localStorage.getItem('alaska_save_' + slotKey);
+        if(!raw){ addLog('No save in that slot.'); return; }
+        const obj = JSON.parse(raw);
+        // merge achievements from persistent store
+        obj.achievements = loadAchievements();
+        state = obj;
+        applyDifficultyProfile();
+        addLog(`Loaded slot ${slotKey}`);
+        updateAll();
+      }catch(e){ addLog("Load failed: "+e.message); }
+    }
+    function deleteSlot(slotKey){
+      localStorage.removeItem('alaska_save_'+slotKey);
+      addLog(`Deleted slot ${slotKey}`);
+    }
+    function exportSave(){
+      const data = JSON.stringify(state);
+      const blob = new Blob([data], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `alaska_save_day${state.day}.json`; a.click();
+      URL.revokeObjectURL(url);
+    }
+    function importSaveFromText(text){
+      try{
+        const obj = JSON.parse(text);
+        if(obj && obj.party){
+          obj.achievements = obj.achievements || loadAchievements();
+          state = obj;
+          applyDifficultyProfile();
+          addLog("Imported save loaded.");
+          updateAll();
+        } else addLog("Invalid save data.");
+      }catch(e){ addLog("Import failed: "+e.message); }
+    }
+
+    // ===== UI wiring =====
+    document.getElementById('save-slot-1').addEventListener('click', ()=> saveSlot('slot1'));
+    document.getElementById('save-slot-2').addEventListener('click', ()=> saveSlot('slot2'));
+    document.getElementById('save-slot-3').addEventListener('click', ()=> saveSlot('slot3'));
+    document.getElementById('load-slot-1').addEventListener('click', ()=> loadSlot('slot1'));
+    document.getElementById('load-slot-2').addEventListener('click', ()=> loadSlot('slot2'));
+    document.getElementById('load-slot-3').addEventListener('click', ()=> loadSlot('slot3'));
+    document.getElementById('del-slot-1').addEventListener('click', ()=> deleteSlot('slot1'));
+    document.getElementById('del-slot-2').addEventListener('click', ()=> deleteSlot('slot2'));
+    document.getElementById('del-slot-3').addEventListener('click', ()=> deleteSlot('slot3'));
+    document.getElementById('export-save').addEventListener('click', ()=> exportSave());
+    document.getElementById('import-save').addEventListener('click', ()=>{
+      const ta = document.getElementById('import-data');
+      if(ta.style.display === 'none'){ ta.style.display = 'block'; ta.focus(); } else {
+        importSaveFromText(ta.value);
+        ta.style.display = 'none'; ta.value = '';
+      }
+    });
+
+    document.getElementById('autosave-toggle').addEventListener('change', function(){ state.autosave = this.checked; addLog('Autosave ' + (this.checked ? 'enabled' : 'disabled')); });
+
+    // Difficulty buttons
+    const diffEasy = document.getElementById('diff-easy');
+    const diffNormal = document.getElementById('diff-normal');
+    const diffHard = document.getElementById('diff-hard');
+    function setDifficulty(d){
+      state.difficulty = d;
+      applyDifficultyProfile();
+      [diffEasy,diffNormal,diffHard].forEach(el=>el.classList.remove('active'));
+      if(d === 'easy') diffEasy.classList.add('active');
+      if(d === 'normal') diffNormal.classList.add('active');
+      if(d === 'hard') diffHard.classList.add('active');
+      addLog('Difficulty set to ' + d);
+    }
+    diffEasy.addEventListener('click', ()=> setDifficulty('easy'));
+    diffNormal.addEventListener('click', ()=> setDifficulty('normal'));
+    diffHard.addEventListener('click', ()=> setDifficulty('hard'));
+
+    // Sound controls (simple ambient generator using WebAudio)
+    let audioCtx = null;
+    let ambientGain = null;
+    function startAudio(){
+      if(audioCtx) return;
+      try{
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = audioCtx.createBufferSource();
+        // create gentle noise via oscillator + filter + gain
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = 140; // base
+        const lfo = audioCtx.createOscillator();
+        lfo.type = 'sine';
+        lfo.frequency.value = 0.12;
+        const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 20;
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc.frequency);
+        gain.gain.value = state.audioVolume * 0.05;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        lfo.start();
+        ambientGain = gain;
+        // keep references
+        audioCtx._osc = osc;
+        audioCtx._lfo = lfo;
+        addLog('Sound started.');
+      }catch(e){ console.warn('Audio start failed',e); }
+    }
+    function stopAudio(){
+      if(!audioCtx) return;
+      try{
+        audioCtx._osc.stop();
+        audioCtx._lfo.stop();
+        audioCtx.close();
+      }catch(e){}
+      audioCtx = null;
+      ambientGain = null;
+      addLog('Sound stopped.');
+    }
+    document.getElementById('sound-toggle').addEventListener('click', function(){
+      state.soundOn = !state.soundOn;
+      this.innerText = 'Sound: ' + (state.soundOn ? 'ON' : 'OFF');
+      if(state.soundOn) startAudio(); else stopAudio();
+    });
+    document.getElementById('volume').addEventListener('input', function(){
+      state.audioVolume = parseFloat(this.value);
+      if(ambientGain) ambientGain.gain.value = state.audioVolume * 0.05;
+    });
+
+    // Sell gold button
+    document.getElementById('sell-gold-btn').addEventListener('click', ()=>{
+      if(state.gold <= 0){ addLog('No gold to sell.'); return; }
+      sellGoldPrompt(Math.min(state.gold,10));
+    });
+
+    // Turn-based controls
+    document.getElementById('turnModeToggle').addEventListener('change', function(){
+      if(this.checked){
+        state.turnMode = true;
+        if(!state.turnStarted){ state.turnStarted = true; state.currentPlayerIdx = 0; addLog(`Turn-based mode enabled. ${state.party[0] ? state.party[0].name : 'First member'} starts.`); }
+      } else {
+        state.turnMode = false; addLog('Classic mode enabled.');
+      }
+      setTurnControls();
+    });
+    document.getElementById('endTurnBtn').addEventListener('click', ()=>{
+      if(state.party.length === 0) return;
+      do{ state.currentPlayerIdx = (state.currentPlayerIdx + 1) % state.party.length; } while(!state.party[state.currentPlayerIdx].alive && state.party.filter(p=>p.alive).length > 0);
+      addLog(`It is now ${state.party[state.currentPlayerIdx].name}'s turn.`);
+      updateAll();
+    });
+    document.getElementById('toggleTurnModeBtn').addEventListener('click', ()=>{ state.turnMode=false; document.getElementById('turnModeToggle').checked=false; addLog('Switched to classic mode.'); setTurnControls(); });
+
+    function setTurnControls(){
+      const sel = document.getElementById('currentPlayer');
+      sel.innerHTML = '';
+      state.party.forEach((p,i)=>{ if(p.alive){ const opt = document.createElement('option'); opt.value = i; opt.innerText = `${p.name} (${p.occupation})`; if(i === state.currentPlayerIdx) opt.selected = true; sel.appendChild(opt); }});
+      sel.disabled = !!state.turnStarted;
+      document.getElementById('turn-controls').style.display = (state.turnMode && !state.gameOver) ? 'block' : 'none';
+    }
+
+    // ===== Image helper =====
+    function setEventImage(url){
+      dom.eventImgContainer.innerHTML = '';
+      if(url){
+        const img = document.createElement('img');
+        img.src = url; img.style.maxWidth='100%'; img.style.borderRadius='8px';
+        dom.eventImgContainer.appendChild(img);
+      }
+    }
+
+    // ===== Update UI & draw market =====
+    function updateAll(){
+      updateStatsUI();
+      renderMap();
+      updateLog();
+      updateAchievementsUI();
+      drawMarket();
+      resizeMarketCanvas();
+      setTurnControls();
+    }
+
+    // ===== Initialization & start flow =====
+    function startGame(){
+      state = getInitialState();
+      applyDifficultyProfile();
+      state.autosave = true;
+      document.getElementById('autosave-toggle').checked = true;
+      setEventImage(towns[0].img);
+      setGameText("1898. You and your party are ready for the Klondike. Customize or use defaults.");
+      setChoices([
+        { text:"Customize Party", next:"party_custom", action: showPartyCustomization },
+        { text:"Use defaults & Outfitter", next:"outfitter_store", action: showOutfitterStore }
+      ]);
+      addLog("Your journey begins.");
+      updateAll();
+      if(state.autosave) saveSlot('_autosave');
+    }
+
+    // Party customization & outfitter
+    function showPartyCustomization(){
+      setEventImage('');
+      setGameText("Customize up to 6 party members");
+      dom.choices.innerHTML = '';
+      const div = document.createElement('div');
+      const temp = state.party.map(p=>({ name:p.name, occupation:p.occupation }));
+      function render(){
+        div.innerHTML = '';
+        temp.forEach((m,idx)=>{
+          const row = document.createElement('div');
+          row.style.marginBottom='8px';
+          row.innerHTML = `Member ${idx+1}: <input id="nm${idx}" value="${escapeHtml(m.name)}"> <select id="oc${idx}">${occupations.map(o=>`<option value="${o.name}"${o.name===m.occupation?' selected':''}>${o.name}</option>`).join('')}</select> <button id="rm${idx}">Remove</button>`;
+          div.appendChild(row);
+        });
+        const controls = document.createElement('div');
+        const addBtn = document.createElement('button'); addBtn.innerText='Add Member'; addBtn.className='muted-btn';
+        addBtn.onclick = ()=>{ if(temp.length>=6){ alert('Max 6'); return; } temp.push({ name:`Member${temp.length+1}`, occupation:occupations[0].name }); render(); };
+        const doneBtn = document.createElement('button'); doneBtn.innerText='Done'; doneBtn.className='muted-btn';
+        doneBtn.onclick = ()=>{
+          const newParty = [];
+          for(let i=0;i<temp.length;i++){
+            const name = document.getElementById('nm'+i).value.trim() || temp[i].name;
+            const occ = document.getElementById('oc'+i).value;
+            newParty.push({ name, health:100, status:'healthy', occupation:occ, bonus:'', exp:0, level:1, alive:true });
+          }
+          state.party = newParty;
+          const bankers = state.party.filter(p=>p.occupation==="Banker").length;
+          state.money = 1000 + (bankers*150);
+          state.food = 60 * state.party.length + (state._difficulty_profile ? state._difficulty_profile.startFoodBonus : 0);
+          state.clothing = 1 * state.party.length;
+          state.medicine = 1 + state.party.filter(p=>p.occupation==="Doctor").length;
+          addLog('Party customized.');
+          setEventImage('');
+          setGameText('Proceed to the outfitter store to buy supplies.');
+          setChoices([{ text:"Open Outfitter", action: showOutfitterStore, next:"docks" }]);
+          updateAll();
+        };
+        controls.appendChild(addBtn); controls.appendChild(doneBtn); div.appendChild(controls);
+      }
+      render();
+      dom.choices.appendChild(div);
+    }
+
+    function showOutfitterStore(){
+      setEventImage('');
+      setGameText('Outfitter store: buy items before you leave.');
+      dom.choices.innerHTML = '';
+      const storeDiv = document.createElement('div');
+      outfitterItems.forEach((it,idx)=>{
+        const row = document.createElement('div');
+        row.style.marginBottom='6px';
+        row.innerHTML = `${it.name} - $${it.price} <input id="qty${idx}" type="number" min="0" value="0" style="width:60px">`;
+        storeDiv.appendChild(row);
+      });
+      const finish = document.createElement('button'); finish.className='choice-btn'; finish.innerText='Finish Shopping';
+      finish.onclick = ()=>{
+        let total = 0;
+        outfitterItems.forEach((it,idx)=>{
+          const qty = Math.max(0, parseInt(document.getElementById('qty'+idx).value || '0',10));
+          total += qty*it.price;
+        });
+        if(total > state.money){ alert('You cannot afford that.'); return; }
+        outfitterItems.forEach((it,idx)=>{
+          const qty = Math.max(0, parseInt(document.getElementById('qty'+idx).value || '0',10));
+          if(qty<=0) return;
+          switch(it.key){
+            case 'food': state.food += qty*it.value; break;
+            case 'clothing': state.clothing += qty*it.value; break;
+            case 'medicine': state.medicine += qty*it.value; break;
+            case 'dog': state.dog = true; break;
+            case 'tools': state.tools = true; break;
+            case 'rifle': state.rifle = true; break;
+            case 'ammo': state.ammo += qty*it.value; break;
+          }
+          addLog(`Bought ${qty} x ${it.name}`);
+        });
+        state.money -= total;
+        setGameText('You finish shopping and head to the docks.');
+        setChoices([{ text:"Board steamer and go to Chilkoot", next:"docks" }]);
+        updateAll();
+      };
+      storeDiv.appendChild(finish);
+      dom.choices.appendChild(storeDiv);
+    }
+
+    // ===== Initialization for UI & start =====
+    applyDifficultyProfile();
+    // populate initial UI state and map and choices
+    function initialUI(){
+      // if autosave exists, offer resume
+      const autosave = localStorage.getItem('alaska_save__autosave');
+      if(autosave){
+        setEventImage('');
+        setGameText("Autosave found. Resume or start new?");
+        setChoices([
+          { text: "Resume Autosave", action: ()=>{ state = JSON.parse(autosave); state.achievements = loadAchievements(); applyDifficultyProfile(); addLog('Resumed autosave'); updateAll(); }, next:"docks" },
+          { text: "Start New Game", action: ()=> startGame(), next:"outfitter_store" }
+        ]);
+      } else {
+        startGame();
+      }
+    }
+
+    // ===== Market drawing and canvas resizing =====
+    function drawMarket(){
+      if(!mctx) return;
+      const hist = state.marketHistory.slice(-60);
+      const w = marketCanvas.width = dom.marketCanvas.clientWidth;
+      const h = marketCanvas.height = dom.marketCanvas.clientHeight;
+      mctx.clearRect(0,0,w,h);
+      if(hist.length < 2) return;
+      const max = Math.max(...hist), min = Math.min(...hist);
+      mctx.strokeStyle = '#2a80d1'; mctx.lineWidth = 2; mctx.beginPath();
+      hist.forEach((p,i)=>{
+        const x = (i/(hist.length-1))*w;
+        const y = h - ((p - min) / Math.max(1,(max-min)))*h;
+        if(i===0) mctx.moveTo(x,y); else mctx.lineTo(x,y);
+      });
+      mctx.stroke();
+      mctx.fillStyle = '#1b5f8a';
+      mctx.fillText(`$${state.marketPrice}/oz`, Math.max(4,w-80), 12);
+    }
+
+    // ===== Final utilities & start UI =====
+    function updateAll(){
+      updateStatsUI();
+      renderMap();
+      updateLog();
+      updateAchievementsUI();
+      drawMarket();
+      resizeMarketCanvas();
+      setTurnControls();
+      // persist achievements
+      saveAchievements();
+    }
+    function resizeMarketCanvas(){ dom.marketCanvas.width = dom.marketCanvas.clientWidth; dom.marketCanvas.height = dom.marketCanvas.clientHeight; drawMarket(); }
+
+    // Start UI
+    initialUI();
+
+    // Expose startGame for restart from choices
+    window.startGame = startGame;
+    // Save autosave on unload
+    window.addEventListener('beforeunload', ()=>{ if(state.autosave) localStorage.setItem('alaska_save__autosave', JSON.stringify(state)); });
+
+  </script>
+</body>
+</html>
