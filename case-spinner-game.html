@@ -930,9 +930,9 @@
     <script>
         // Game Data Storage
         let gameData = {
-            balance: 5000,
+            balance: 5,
             inventory: [],
-            premium: true,
+            premium: false,
             luckTokens: 3,
             clan: "Shadow Ops",
             quests: {
@@ -955,22 +955,55 @@
             fragments: 0,
             totalSpent: 0,
             casesOpened: 0,
-            rarestPull: { name: "None", rarity: "white" }
+            rarestPull: { name: "None", rarity: "white" },
+            vaultKeys: 0,
+            obsidianVaultUnlocked: false
         };
 
-        // Expanded Skin Database with 100+ skins
+        // Expanded Skin Database with 800+ skins
         const skinDatabase = {
             white: [
-                { name: "Basic Knife", icon: "🔪", value: 10 },
-                { name: "Simple Pistol", icon: "🔫", value: 15 },
-                { name: "Wood Stock", icon: "🪵", value: 8 },
-                { name: "Iron Sight", icon: "🎯", value: 12 },
-                { name: "Plain Grip", icon: "✋", value: 9 },
-                { name: "Starter Blade", icon: "⚔️", value: 11 },
-                { name: "Rookie Rifle", icon: "🏹", value: 14 },
-                { name: "Basic Scope", icon: "🔍", value: 13 },
-                { name: "Training Sword", icon: "🗡️", value: 10 },
-                { name: "Novice Axe", icon: "🪓", value: 16 }
+                { name: "Basic Knife", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🔪", value: 1 },
+                { name: "Simple Pistol", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🔫", value: 2 },
+                { name: "Wood Stock", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🪵", value: 1 },
+                { name: "Iron Sight", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🎯", value: 2 },
+                { name: "Plain Grip", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=✋", value: 1 },
+                { name: "Starter Blade", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=⚔️", value: 2 },
+                { name: "Rookie Rifle", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🏹", value: 2 },
+                { name: "Basic Scope", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🔍", value: 1 },
+                { name: "Training Sword", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🗡️", value: 1 },
+                { name: "Novice Axe", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🪓", value: 2 },
+                { name: "Rusty Blade", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🔧", value: 1 },
+                { name: "Worn Gloves", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🧤", value: 1 },
+                { name: "Old Boot", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🥾", value: 1 },
+                { name: "Cracked Shield", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🛡️", value: 2 },
+                { name: "Bent Arrow", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🏹", value: 1 },
+                { name: "Dull Spear", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🗡️", value: 1 },
+                { name: "Wooden Club", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🏏", value: 1 },
+                { name: "Stone Hammer", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🔨", value: 2 },
+                { name: "Leather Strap", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🎒", value: 1 },
+                { name: "Iron Ring", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=💍", value: 1 },
+                { name: "Cloth Bandage", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🩹", value: 1 },
+                { name: "Wooden Stick", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🪄", value: 1 },
+                { name: "Rope Coil", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🪢", value: 1 },
+                { name: "Canvas Bag", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=👜", value: 1 },
+                { name: "Metal Scrap", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=⚙️", value: 1 },
+                { name: "Broken Chain", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=⛓️", value: 1 },
+                { name: "Worn Hat", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🎩", value: 1 },
+                { name: "Old Coin", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🪙", value: 1 },
+                { name: "Torn Page", iron: "https://via.placeholder.com/80x80/ffffff/000000?text=📄", value: 1 },
+                { name: "Dusty Bottle", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🍶", value: 1 },
+                { name: "Faded Map", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🗺️", value: 1 },
+                { name: "Chipped Mug", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=☕", value: 1 },
+                { name: "Bent Fork", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🍴", value: 1 },
+                { name: "Cracked Lens", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🔍", value: 1 },
+                { name: "Worn Shoe", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=👞", value: 1 },
+                { name: "Old Key", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🔑", value: 1 },
+                { name: "Tattered Flag", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🏳️", value: 1 },
+                { name: "Rusty Lock", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🔒", value: 1 },
+                { name: "Broken Watch", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=⌚", value: 1 },
+                { name: "Faded Photo", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=📷", value: 1 },
+                { name: "Empty Vial", icon: "https://via.placeholder.com/80x80/ffffff/000000?text=🧪", value: 1 }
             ],
             blue: [
                 { name: "Blue Steel", icon: "🗡️", value: 50 },

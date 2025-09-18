@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Case Spinner Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px 30px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 4s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .stats {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        .premium-badge {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #000;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .main-nav {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 120px;
+            max-width: 150px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .case-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .case-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            border: 2px solid transparent;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .case-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .case-card:hover::before {
+            left: 100%;
+        }
+
+        .case-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: #4ecdc4;
+            box-shadow: 0 20px 40px rgba(78, 205, 196, 0.3);
+        }
+
+        .case-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 15px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .case-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .case-price {
+            color: #4ecdc4;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .event-timer {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .pity-counter {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 12px;
+            margin-top: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .skin-item {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            backdrop-filter: blur(10px);
+        }
+
+        .skin-item:hover {
+            transform: translateY(-5px);
+            border-color: #4ecdc4;
+            box-shadow: 0 15px 30px rgba(78, 205, 196, 0.3);
+        }
+
+        .skin-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .skin-icon img {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .rarity-white { background: linear-gradient(45deg, #ffffff, #f8f9fa); color: #333; }
+        .rarity-blue { background: linear-gradient(45deg, #3498db, #2980b9); }
+        .rarity-purple { background: linear-gradient(45deg, #9b59b6, #8e44ad); }
+        .rarity-pink { background: linear-gradient(45deg, #e91e63, #c2185b); }
+        .rarity-red { background: linear-gradient(45deg, #f44336, #d32f2f); }
+        .rarity-yellow { background: linear-gradient(45deg, #ff9800, #f57c00); }
+        .rarity-golden { background: linear-gradient(45deg, #ffd700, #ffb300); }
+        .rarity-black { background: linear-gradient(45deg, #000000, #424242); }
+        .rarity-volcanic { background: linear-gradient(45deg, #ff4500, #8b0000, #ff6347); animation: volcanic 2s ease-in-out infinite; }
+        .rarity-obsidian { background: linear-gradient(45deg, #2f2f2f, #000000, #4a4a4a); animation: obsidianPulse 3s ease-in-out infinite; }
+        .rarity-shattered { background: linear-gradient(45deg, #1a1a1a, #333333, #666666); animation: shatter 1.5s ease-in-out infinite; }
+
+        @keyframes volcanic {
+            0%, 100% { box-shadow: 0 0 20px #ff4500; }
+            50% { box-shadow: 0 0 40px #ff6347, 0 0 60px #ff4500; }
+        }
+
+        @keyframes obsidianPulse {
+            0%, 100% { box-shadow: 0 0 15px #000000; }
+            50% { box-shadow: 0 0 30px #4a4a4a, 0 0 45px #2f2f2f; }
+        }
+
+        @keyframes shatter {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 10px #333333; }
+            50% { transform: scale(1.05); box-shadow: 0 0 25px #666666; }
+        }
+
+        .skin-name {
+            font-size: 14px;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 600;
+        }
+
+        .skin-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 25px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            border: 2px solid #4ecdc4;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .spinner-wheel {
+            width: 400px;
+            height: 400px;
+            border: 8px solid #333;
+            border-radius: 50%;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            background: conic-gradient(
+                #ffffff 0deg 45deg,
+                #3498db 45deg 90deg,
+                #9b59b6 90deg 135deg,
+                #e91e63 135deg 180deg,
+                #f44336 180deg 225deg,
+                #ff9800 225deg 270deg,
+                #ffd700 270deg 315deg,
+                #000000 315deg 360deg
+            );
+            box-shadow: 0 0 50px rgba(78, 205, 196, 0.5);
+        }
+
+        .spin-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            border: none;
+            color: white;
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .spin-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(255, 107, 107, 0.4);
+        }
+
+        .vault-section {
+            background: linear-gradient(135deg, #2c1810, #1a0f08);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 3px solid #8b4513;
+            box-shadow: 0 0 30px rgba(139, 69, 19, 0.5);
+        }
+
+        .vault-key-display {
+            background: linear-gradient(45deg, #ffd700, #ffb300);
+            color: #000;
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 20px 0;
+            display: inline-block;
+        }
+
+        .vault-exchange-btn {
+            background: linear-gradient(135deg, #8b4513, #a0522d);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .vault-exchange-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(139, 69, 19, 0.4);
+        }
+
+        .vault-exchange-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .daily-reward-day {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .daily-reward-day.claimed {
+            border-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.2);
+        }
+
+        .daily-reward-day.current {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.2);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .sound-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #4ecdc4;
+            color: white;
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sound-toggle:hover {
+            background: rgba(78, 205, 196, 0.2);
+            transform: scale(1.1);
+        }
+
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            z-index: 1001;
+            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            .header { flex-direction: column; gap: 20px; padding: 20px; }
+            .stats { gap: 15px; justify-content: center; }
+            .main-nav { gap: 8px; }
+            .nav-btn { padding: 12px 15px; font-size: 12px; min-width: 90px; }
+            .case-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+            .inventory-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+            .spinner-wheel { width: 300px; height: 300px; }
+        }
+    </style>
+</head>
+<body>
+    <button class="sound-toggle" onclick="toggleSound()" id="sound-toggle">🔊</button>
+    
+    <div class="container">
+        <header class="header">
+            <div class="logo">🎰 OBSIDIAN CASE SPINNER</div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-label">Balance</div>
+                    <div class="stat-value" id="balance">$5</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Net Worth</div>
+                    <div class="stat-value" id="networth">$5</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Luck Tokens</div>
+                    <div class="stat-value" id="tokens">3</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Vault Keys</div>
+                    <div class="stat-value" id="vault-keys">0</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Rank</div>
+                    <div class="stat-value" id="rank" style="color: #CD7F32;">Bronze</div>
+                </div>
+                <div class="premium-badge" id="premium-status">Free</div>
+            </div>
+        </header>
+
+        <nav class="main-nav">
+            <button class="nav-btn active" onclick="showScreen('cases')">Cases</button>
+            <button class="nav-btn" onclick="showScreen('inventory')">Inventory</button>
+            <button class="nav-btn" onclick="showScreen('marketplace')">Market</button>
+            <button class="nav-btn" onclick="showScreen('vault')">Obsidian Vault</button>
+            <button class="nav-btn" onclick="showScreen('battles')">Battles</button>
+            <button class="nav-btn" onclick="showScreen('dailyrewards')">Daily</button>
+            <button class="nav-btn" onclick="showScreen('achievements')">Achievements</button>
+            <button class="nav-btn" onclick="showScreen('premium')">Premium</button>
+        </nav>
+
+        <!-- Cases Screen -->
+        <div id="cases" class="screen active">
+            <div class="case-grid" id="case-grid">
+                <!-- Cases will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Inventory Screen -->
+        <div id="inventory" class="screen">
+            <div class="inventory-grid" id="inventory-grid">
+                <!-- Inventory items will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Marketplace Screen -->
+        <div id="marketplace" class="screen">
+            <h2 style="margin-bottom: 20px;">🏪 Marketplace</h2>
+            <div id="marketplace-listings">
+                <!-- Marketplace items will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Obsidian Vault Screen -->
+        <div id="vault" class="screen">
+            <div class="vault-section">
+                <h2 style="color: #ffd700; margin-bottom: 20px;">🏛️ OBSIDIAN VAULT EVENT</h2>
+                <p style="margin-bottom: 20px;">Exclusive event lasting until September 30th, 2024!</p>
+                <div class="vault-key-display">
+                    Vault Keys: <span id="vault-key-count">0</span> 🔑
+                </div>
+                <p style="margin: 20px 0;">Exchange 500 Luck Tokens for 1 Vault Key</p>
+                <button class="vault-exchange-btn" onclick="exchangeForVaultKey()" id="vault-exchange">
+                    Exchange Tokens (500 → 1 Key)
+                </button>
+                <div id="vault-cases" style="margin-top: 30px;">
+                    <!-- Vault cases will be generated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Other screens... -->
+        <div id="battles" class="screen">
+            <h2>⚔️ Case Battles</h2>
+            <p>Coming soon...</p>
+        </div>
+
+        <div id="dailyrewards" class="screen">
+            <h2>🎁 Daily Rewards</h2>
+            <div id="daily-calendar" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 15px; margin: 20px 0;">
+                <!-- Daily rewards will be generated here -->
+            </div>
+            <button class="spin-btn" onclick="claimDailyReward()" id="daily-claim-btn">Claim Today's Reward</button>
+        </div>
+
+        <div id="achievements" class="screen">
+            <h2>🏆 Achievements</h2>
+            <div id="achievement-list">
+                <!-- Achievements will be generated here -->
+            </div>
+        </div>
+
+        <div id="premium" class="screen">
+            <h2>💎 Premium Pass</h2>
+            <button class="spin-btn" onclick="togglePremium()">Toggle Premium</button>
+        </div>
+    </div>
+
+    <!-- Spinner Modal -->
+    <div id="spinner-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="case-title">Opening Case...</h2>
+            <div class="spinner-wheel" id="spinner-wheel"></div>
+            <button class="spin-btn" id="spin-button" onclick="spinCase()">SPIN!</button>
+        </div>
+    </div>
+
+    <!-- Reward Modal -->
+    <div id="reward-modal" class="modal">
+        <div class="modal-content">
+            <h2>🎉 Congratulations!</h2>
+            <div class="skin-icon" id="reward-icon" style="width: 120px; height: 120px; margin: 20px auto; font-size: 48px;"></div>
+            <h3 id="reward-name">Awesome Skin</h3>
+            <p id="reward-value">Value: $1,234</p>
+            <button class="spin-btn" onclick="closeReward()" style="margin-top: 20px;">Awesome!</button>
+        </div>
+    </div>
+
+    <script>
+        // Game Data Storage
+        let gameData = {
+            balance: 5,
+            inventory: [],
+            premium: false,
+            luckTokens: 3,
+            vaultKeys: 0,
+            achievements: [],
+            dailyRewards: {
+                lastClaim: 0,
+                streak: 0,
+                day: 1
+            },
+            obsidianVaultUnlocked: false,
+            casesOpened: 0,
+            totalSpent: 0,
+            rarestPull: { name: "None", rarity: "white" }
+        };
+
+        // Massive Skin Database (800+ skins)
+        const skinDatabase = {
+            white: Array.from({length: 100}, (_, i) => ({
+                name: `Common Item ${i + 1}`,
+                icon: `https://via.placeholder.com/80x80/f8f9fa/333333?text=C${i + 1}`,
+                value: Math.floor(Math.random() * 3) + 1
+            })),
+            blue: Array.from({length: 80}, (_, i) => ({
+                name: `Rare Item ${i + 1}`,
+                icon: `https://via.placeholder.com/80x80/3498db/ffffff?text=R${i + 1}`,
+                value: Math.floor(Math.random() * 50) + 25
+            })),
+            purple: Array.from({length: 60}, (_, i) => ({
+                name: `Epic Item ${i + 1}`,
+                icon: `https://via.placeholder.com/80x80/9b59b6/ffffff?text=E${i + 1}`,
+                value: Math.floor(Math.random() * 200) + 100
+            })),
+            pink: Array.from({length: 50}, (_, i) => ({
+                name: `Legendary Item ${i + 1}`,
+                icon: `https://via.placeholder.com/80x80/e91e63/ffffff?text=L${i + 1}`,
+                value: Math.floor(Math.random() * 500) + 300
+            })),
+            red: Array.from({length: 40}, (_, i) => ({
+                name: `Mythical Item ${i + 1}`,
+                icon: `https://via.placeholder.com/80x80/f44336/ffffff?text=M${i + 1}`,
+                value: Math.floor(Math.random() * 1500) + 800
+            })),
+            yellow: Array.from({length: 30}, (_, i) => ({
+                name: `Ancient Item ${i + 1}`,
+                icon: `https://via.placeholder.com/80x80/ff9800/ffffff?text=A${i + 1}`,
+                value: Math.floor(Math.random() * 3000) + 2000
+            })),
+            golden: Array.from({length: 20}, (_, i) => ({
+                name: `Golden Item ${i + 1}`,
+                icon: `https://via.placeholder.com/80x80/ffd700/000000?text=G${i + 1}`,
+                value: Math.floor(Math.random() * 8000) + 5000
+            })),
+            black: Array.from({length: 10}, (_, i) => ({
+                name: `Immortal Item ${i + 1}`,
+                icon: `https://via.placeholder.com/80x80/000000/ffffff?text=I${i + 1}`,
+                value: Math.floor(Math.random() * 20000) + 15000
+            })),
+            // Obsidian Vault Exclusive Rarities
+            volcanic: [
+                { name: "Volcanic Obsidian Blade", icon: "https://via.placeholder.com/80x80/ff4500/ffffff?text=VO", value: 100000 },
+                { name: "Volcanic Obsidian Crown", icon: "https://via.placeholder.com/80x80/ff4500/ffffff?text=VC", value: 120000 },
+                { name: "Volcanic Obsidian Wings", icon: "https://via.placeholder.com/80x80/ff4500/ffffff?text=VW", value: 150000 }
+            ],
+            obsidian: [
+                { name: "Pure Obsidian Sword", icon: "https://via.placeholder.com/80x80/2f2f2f/ffffff?text=OS", value: 75000 },
+                { name: "Pure Obsidian Shield", icon: "https://via.placeholder.com/80x80/2f2f2f/ffffff?text=PS", value: 85000 },
+                { name: "Pure Obsidian Armor", icon: "https://via.placeholder.com/80x80/2f2f2f/ffffff?text=PA", value: 95000 }
+            ],
+            shattered: [
+                { name: "Shattered Obsidian Fragment", icon: "https://via.placeholder.com/80x80/666666/ffffff?text=SF", value: 50000 },
+                { name: "Shattered Obsidian Crystal", icon: "https://via.placeholder.com/80x80/666666/ffffff?text=SC", value: 60000 },
+                { name: "Shattered Obsidian Relic", icon: "https://via.placeholder.com/80x80/666666/ffffff?text=SR", value: 70000 }
+            ]
+        };
+
+        // Expanded Case Database (37 total cases)
+        const caseDatabase = [
+            // Basic Cases
+            { name: "Starter Case", icon: "https://via.placeholder.com/120x120/cccccc/000000?text=START", price: 5, drops: { white: 0.85, blue: 0.13, purple: 0.018, pink: 0.0019, red: 0.00009, shattered: 0.00000001 } },
+            { name: "Common Case", icon: "https://via.placeholder.com/120x120/ffffff/000000?text=COMMON", price: 15, drops: { white: 0.75, blue: 0.20, purple: 0.045, pink: 0.0045, red: 0.0004, yellow: 0.00009, obsidian: 0.00000002, shattered: 0.0000001 } },
+            { name: "Rare Case", icon: "https://via.placeholder.com/120x120/3498db/ffffff?text=RARE", price: 50, drops: { white: 0.60, blue: 0.30, purple: 0.08, pink: 0.015, red: 0.004, yellow: 0.0009, golden: 0.00009, obsidian: 0.00000005, shattered: 0.0000001 } },
+            { name: "Epic Case", icon: "https://via.placeholder.com/120x120/9b59b6/ffffff?text=EPIC", price: 150, drops: { blue: 0.50, purple: 0.35, pink: 0.12, red: 0.025, yellow: 0.004, golden: 0.0009, black: 0.00009, volcanic: 0.000000005, shattered: 0.0000001 } },
+            { name: "Legendary Case", icon: "https://via.placeholder.com/120x120/e91e63/ffffff?text=LEGEND", price: 500, drops: { purple: 0.40, pink: 0.35, red: 0.18, yellow: 0.06, golden: 0.009, black: 0.0009, volcanic: 0.00000001, obsidian: 0.00000002 } },
+            { name: "Mythical Case", icon: "https://via.placeholder.com/120x120/f44336/ffffff?text=MYTH", price: 1500, drops: { pink: 0.30, red: 0.40, yellow: 0.20, golden: 0.08, black: 0.019, volcanic: 0.0000001, obsidian: 0.0000005 } },
+            { name: "Ancient Case", icon: "https://via.placeholder.com/120x120/ff9800/ffffff?text=ANCIENT", price: 5000, drops: { red: 0.25, yellow: 0.35, golden: 0.30, black: 0.095, volcanic: 0.000001, obsidian: 0.000004 } },
+            { name: "Golden Case", icon: "https://via.placeholder.com/120x120/ffd700/000000?text=GOLD", price: 15000, drops: { yellow: 0.30, golden: 0.50, black: 0.195, volcanic: 0.000002, obsidian: 0.000003 } },
+            { name: "Immortal Case", icon: "https://via.placeholder.com/120x120/000000/ffffff?text=IMMORTAL", price: 50000, drops: { golden: 0.40, black: 0.595, volcanic: 0.000002, obsidian: 0.000003 } },
+            
+            // Themed Cases
+            { name: "Fire Case", icon: "https://via.placeholder.com/120x120/ff4500/ffffff?text=FIRE", price: 200, drops: { blue: 0.35, purple: 0.25, pink: 0.2, red: 0.15, yellow: 0.04, golden: 0.009, volcanic: 0.000001 } },
+            { name: "Ice Case", icon: "https://via.placeholder.com/120x120/87ceeb/000000?text=ICE", price: 200, drops: { blue: 0.4, purple: 0.3, pink: 0.15, red: 0.1, yellow: 0.04, golden: 0.009, shattered: 0.000001 } },
+            { name: "Lightning Case", icon: "https://via.placeholder.com/120x120/ffff00/000000?text=BOLT", price: 300, drops: { purple: 0.3, pink: 0.25, red: 0.2, yellow: 0.2, golden: 0.045, black: 0.004, volcanic: 0.000001 } },
+            { name: "Shadow Case", icon: "https://via.placeholder.com/120x120/2f2f2f/ffffff?text=SHADOW", price: 800, drops: { purple: 0.25, pink: 0.25, red: 0.25, yellow: 0.2, golden: 0.08, black: 0.019, obsidian: 0.000001 } },
+            { name: "Crystal Case", icon: "https://via.placeholder.com/120x120/ff69b4/ffffff?text=CRYSTAL", price: 1000, drops: { pink: 0.3, red: 0.25, yellow: 0.2, golden: 0.15, black: 0.08, shattered: 0.000001 } },
+            { name: "Demon Case", icon: "https://via.placeholder.com/120x120/8b0000/ffffff?text=DEMON", price: 2500, drops: { red: 0.3, yellow: 0.25, golden: 0.25, black: 0.195, volcanic: 0.000001 } },
+            { name: "Angel Case", icon: "https://via.placeholder.com/120x120/ffffff/000000?text=ANGEL", price: 3000, drops: { yellow: 0.25, golden: 0.35, black: 0.395, obsidian: 0.000001 } },
+            { name: "Dragon Case", icon: "https://via.placeholder.com/120x120/ff6347/ffffff?text=DRAGON", price: 7500, drops: { golden: 0.35, black: 0.645, volcanic: 0.000001 } },
+            { name: "Phoenix Case", icon: "https://via.placeholder.com/120x120/ff1493/ffffff?text=PHOENIX", price: 10000, drops: { golden: 0.40, black: 0.595, volcanic: 0.000002, obsidian: 0.000003 } },
+            { name: "Void Case", icon: "https://via.placeholder.com/120x120/4b0082/ffffff?text=VOID", price: 20000, drops: { black: 0.995, volcanic: 0.000002, obsidian: 0.000003 } },
+            { name: "Cosmic Case", icon: "https://via.placeholder.com/120x120/191970/ffffff?text=COSMIC", price: 35000, drops: { black: 0.99, volcanic: 0.005, obsidian: 0.005 } },
+            
+            // Premium Cases
+            { name: "VIP Vault", icon: "https://via.placeholder.com/120x120/ffd700/000000?text=VIP", price: 2000, premiumOnly: true, drops: { red: 0.2, yellow: 0.25, golden: 0.35, black: 0.195, volcanic: 0.000002, obsidian: 0.000003 } },
+            { name: "Elite Vault", icon: "https://via.placeholder.com/120x120/b8860b/ffffff?text=ELITE", price: 8000, premiumOnly: true, drops: { yellow: 0.15, golden: 0.4, black: 0.445, volcanic: 0.000002, obsidian: 0.000003 } },
+            { name: "Supreme Vault", icon: "https://via.placeholder.com/120x120/8b4513/ffffff?text=SUPREME", price: 25000, premiumOnly: true, drops: { golden: 0.3, black: 0.695, volcanic: 0.000002, obsidian: 0.000003 } },
+            
+            // Event Cases
+            { name: "Halloween Case", icon: "https://via.placeholder.com/120x120/ff8c00/000000?text=🎃", price: 666, isEvent: true, eventEnd: Date.now() + (60 * 24 * 60 * 60 * 1000), drops: { purple: 0.25, pink: 0.25, red: 0.25, yellow: 0.2, golden: 0.045, black: 0.004, shattered: 0.000001 } },
+            { name: "Christmas Case", icon: "https://via.placeholder.com/120x120/228b22/ffffff?text=🎄", price: 777, isEvent: true, eventEnd: Date.now() + (90 * 24 * 60 * 60 * 1000), drops: { purple: 0.2, pink: 0.25, red: 0.25, yellow: 0.25, golden: 0.045, black: 0.004, obsidian: 0.000001 } },
+            
+            // Obsidian Vault Cases (unlocked with vault keys)
+            { name: "Shattered Obsidian Vault", icon: "https://via.placeholder.com/120x120/666666/ffffff?text=SHARD", price: 0, isVaultCase: true, vaultTier: 3, drops: { black: 0.70, shattered: 0.30 } },
+            { name: "Obsidian Vault", icon: "https://via.placeholder.com/120x120/2f2f2f/ffffff?text=OBSID", price: 0, isVaultCase: true, vaultTier: 2, drops: { black: 0.50, obsidian: 0.50 } },
+            { name: "Volcanic Obsidian Vault", icon: "https://via.placeholder.com/120x120/ff4500/ffffff?text=VOLC", price: 0, isVaultCase: true, vaultTier: 1, drops: { black: 0.30, volcanic: 0.70 } }
+        ];
+
+        // Daily Rewards
+        const dailyRewards = [
+            { day: 1, reward: 10, type: "currency" },
+            { day: 2, reward: 1, type: "tokens" },
+            { day: 3, reward: 25, type: "currency" },
+            { day: 4, reward: 2, type: "tokens" },
+            { day: 5, reward: 50, type: "currency" },
+            { day: 6, reward: 3, type: "tokens" },
+            { day: 7, reward: 100, type: "currency" }
+        ];
+
+        // Sound System
+        let soundEnabled = true;
+
+        // Initialize Game
+        function initGame() {
+            loadGameData();
+            generateCases();
+            generateVaultCases();
+            generateDailyRewards();
+            updateUI();
+            checkVaultExpiry();
+        }
+
+        // Load/Save Game Data
+        function loadGameData() {
+            const saved = localStorage.getItem('obsidianCaseSpinner');
+            if (saved) {
+                gameData = { ...gameData, ...JSON.parse(saved) };
+            }
+        }
+
+        function saveGameData() {
+            localStorage.setItem('obsidianCaseSpinner', JSON.stringify(gameData));
+        }
+
+        // Screen Navigation
+        function showScreen(screenName) {
+            document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(screenName).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (screenName === 'inventory') updateInventory();
+            if (screenName === 'vault') generateVaultCases();
+        }
+
+        // Generate Cases
+        function generateCases() {
+            const caseGrid = document.getElementById('case-grid');
+            caseGrid.innerHTML = '';
+            
+            caseDatabase.forEach((caseData, index) => {
+                if (caseData.isVaultCase) return; // Skip vault cases in main grid
+                if (caseData.premiumOnly && !gameData.premium) return;
+                if (caseData.isEvent && Date.now() > caseData.eventEnd) return;
+                
+                const caseCard = document.createElement('div');
+                caseCard.className = 'case-card';
+                
+                let eventTimer = '';
+                if (caseData.isEvent) {
+                    const timeLeft = caseData.eventEnd - Date.now();
+                    const days = Math.floor(timeLeft / (24 * 60 * 60 * 1000));
+                    eventTimer = `<div class="event-timer">${days} days left</div>`;
+                }
+                
+                caseCard.innerHTML = `
+                    <div class="case-image">
+                        <img src="${caseData.icon}" alt="${caseData.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 15px;">
+                    </div>
+                    <div class="case-name">${caseData.name}</div>
+                    <div class="case-price">$${caseData.price}</div>
+                    ${eventTimer}
+                `;
+                caseCard.onclick = () => openCase(index);
+                caseGrid.appendChild(caseCard);
+            });
+        }
+
+        // Generate Vault Cases
+        function generateVaultCases() {
+            const vaultContainer = document.getElementById('vault-cases');
+            if (!vaultContainer) return;
+            
+            // Check if vault event is still active
+            const vaultEndDate = new Date('2024-09-30');
+            const now = new Date();
+            
+            if (now > vaultEndDate) {
+                vaultContainer.innerHTML = '<p style="color: #ff6b6b; font-size: 18px;">Obsidian Vault Event has ended!</p>';
+                return;
+            }
+            
+            vaultContainer.innerHTML = '<h3 style="margin-bottom: 20px;">Vault Cases (Requires Vault Keys)</h3>';
+            
+            const vaultCases = caseDatabase.filter(c => c.isVaultCase).sort((a, b) => a.vaultTier - b.vaultTier);
+            
+            vaultCases.forEach((caseData, index) => {
+                const caseCard = document.createElement('div');
+                caseCard.className = 'case-card';
+                caseCard.style.border = `3px solid ${caseData.vaultTier === 1 ? '#ff4500' : caseData.vaultTier === 2 ? '#2f2f2f' : '#666666'}`;
+                
+                caseCard.innerHTML = `
+                    <div class="case-image">
+                        <img src="${caseData.icon}" alt="${caseData.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 15px;">
+                    </div>
+                    <div class="case-name">${caseData.name}</div>
+                    <div class="case-price">1 Vault Key 🔑</div>
+                    <div style="font-size: 12px; margin-top: 10px;">Tier ${caseData.vaultTier} (${caseData.vaultTier === 1 ? 'Best' : caseData.vaultTier === 2 ? 'Great' : 'Good'})</div>
+                `;
+                caseCard.onclick = () => openVaultCase(caseData);
+                vaultContainer.appendChild(caseCard);
+            });
+        }
+
+        // Open Regular Case
+        function openCase(caseIndex) {
+            const caseData = caseDatabase[caseIndex];
+            
+            if (gameData.balance < caseData.price) {
+                showNotification("Not enough balance!");
+                return;
+            }
+            
+            if (caseData.premiumOnly && !gameData.premium) {
+                showNotification("Premium required!");
+                return;
+            }
+            
+            gameData.balance -= caseData.price;
+            gameData.totalSpent += caseData.price;
+            gameData.casesOpened++;
+            
+            document.getElementById('case-title').textContent = `Opening ${caseData.name}...`;
+            document.getElementById('spinner-modal').style.display = 'block';
+            
+            window.currentCase = caseData;
+            updateUI();
+            saveGameData();
+        }
+
+        // Open Vault Case
+        function openVaultCase(caseData) {
+            if (gameData.vaultKeys < 1) {
+                showNotification("You need a Vault Key to open this case!");
+                return;
+            }
+            
+            gameData.vaultKeys--;
+            
+            document.getElementById('case-title').textContent = `Opening ${caseData.name}...`;
+            document.getElementById('spinner-modal').style.display = 'block';
+            
+            window.currentCase = caseData;
+            updateUI();
+            saveGameData();
+        }
+
+        // Spin Case
+        function spinCase() {
+            const spinButton = document.getElementById('spin-button');
+            const spinner = document.getElementById('spinner-wheel');
+            
+            spinButton.disabled = true;
+            spinButton.textContent = 'SPINNING...';
+            
+            const rarity = determineRarity(window.currentCase.drops);
+            const skinPool = skinDatabase[rarity];
+            const wonSkin = skinPool[Math.floor(Math.random() * skinPool.length)];
+            
+            setTimeout(() => {
+                gameData.inventory.push({ ...wonSkin, rarity });
+                showReward({ ...wonSkin, rarity });
+                
+                spinButton.disabled = false;
+                spinButton.textContent = 'SPIN!';
+                updateUI();
+                saveGameData();
+            }, 2000);
+        }
+
+        // Determine Rarity
+        function determineRarity(dropRates) {
+            const random = Math.random();
+            let cumulative = 0;
+            
+            for (const [rarity, rate] of Object.entries(dropRates)) {
+                cumulative += rate;
+                if (random <= cumulative) {
+                    return rarity;
+                }
+            }
+            
+            return 'white';
+        }
+
+        // Show Reward
+        function showReward(skin) {
+            document.getElementById('reward-icon').className = `skin-icon rarity-${skin.rarity}`;
+            if (skin.icon.startsWith('http')) {
+                document.getElementById('reward-icon').innerHTML = `<img src="${skin.icon}" alt="${skin.name}" style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover;">`;
+            } else {
+                document.getElementById('reward-icon').textContent = skin.icon;
+            }
+            document.getElementById('reward-name').textContent = skin.name;
+            document.getElementById('reward-value').textContent = `Value: $${skin.value.toLocaleString()}`;
+            
+            document.getElementById('spinner-modal').style.display = 'none';
+            document.getElementById('reward-modal').style.display = 'block';
+        }
+
+        function closeReward() {
+            document.getElementById('reward-modal').style.display = 'none';
+        }
+
+        // Exchange Tokens for Vault Key
+        function exchangeForVaultKey() {
+            if (gameData.luckTokens < 500) {
+                showNotification("You need 500 Luck Tokens to exchange for a Vault Key!");
+                return;
+            }
+            
+            gameData.luckTokens -= 500;
+            gameData.vaultKeys++;
+            
+            showNotification("Exchanged 500 Luck Tokens for 1 Vault Key!");
+            updateUI();
+            saveGameData();
+        }
+
+        // Update UI
+        function updateUI() {
+            document.getElementById('balance').textContent = `$${gameData.balance.toLocaleString()}`;
+            document.getElementById('tokens').textContent = gameData.luckTokens.toLocaleString();
+            document.getElementById('vault-keys').textContent = gameData.vaultKeys;
+            
+            const inventoryValue = gameData.inventory.reduce((sum, skin) => sum + skin.value, 0);
+            const netWorth = gameData.balance + inventoryValue;
+            document.getElementById('networth').textContent = `$${netWorth.toLocaleString()}`;
+            
+            document.getElementById('premium-status').textContent = gameData.premium ? 'Premium' : 'Free';
+            
+            // Update vault key count in vault screen
+            const vaultKeyCount = document.getElementById('vault-key-count');
+            if (vaultKeyCount) vaultKeyCount.textContent = gameData.vaultKeys;
+            
+            // Update exchange button
+            const exchangeBtn = document.getElementById('vault-exchange');
+            if (exchangeBtn) {
+                exchangeBtn.disabled = gameData.luckTokens < 500;
+                exchangeBtn.textContent = `Exchange Tokens (${gameData.luckTokens}/500 → 1 Key)`;
+            }
+        }
+
+        // Update Inventory
+        function updateInventory() {
+            const inventoryGrid = document.getElementById('inventory-grid');
+            inventoryGrid.innerHTML = '';
+            
+            gameData.inventory.forEach((skin, index) => {
+                const skinItem = document.createElement('div');
+                skinItem.className = 'skin-item';
+                skinItem.innerHTML = `
+                    <div class="skin-icon rarity-${skin.rarity}">
+                        ${skin.icon.startsWith('http') ? 
+                            `<img src="${skin.icon}" alt="${skin.name}" style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover;">` :
+                            skin.icon
+                        }
+                    </div>
+                    <div class="skin-name">${skin.name}</div>
+                    <div class="skin-value">$${skin.value.toLocaleString()}</div>
+                `;
+                inventoryGrid.appendChild(skinItem);
+            });
+        }
+
+        // Daily Rewards System
+        function generateDailyRewards() {
+            const calendar = document.getElementById('daily-calendar');
+            if (!calendar) return;
+            
+            calendar.innerHTML = '';
+            
+            dailyRewards.forEach((reward, index) => {
+                const day = index + 1;
+                const isToday = canClaimToday() && day === gameData.dailyRewards.day;
+                const isClaimed = isRewardClaimedToday() && day === gameData.dailyRewards.day;
+                
+                const dayDiv = document.createElement('div');
+                dayDiv.className = `daily-reward-day ${isClaimed ? 'claimed' : ''} ${isToday && !isClaimed ? 'current' : ''}`;
+                dayDiv.innerHTML = `
+                    <div style="font-weight: bold;">Day ${day}</div>
+                    <div style="font-size: 24px; margin: 10px 0;">${reward.type === 'tokens' ? '🍀' : '💰'}</div>
+                    <div style="font-size: 14px;">${reward.reward} ${reward.type === 'tokens' ? 'Tokens' : '$'}</div>
+                `;
+                calendar.appendChild(dayDiv);
+            });
+        }
+
+        function canClaimToday() {
+            if (gameData.dailyRewards.lastClaim === 0) return true;
+            
+            const now = new Date();
+            const lastClaim = new Date(gameData.dailyRewards.lastClaim);
+            const diffTime = Math.abs(now - lastClaim);
+            const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
+            
+            return diffHours >= 24;
+        }
+
+        function isRewardClaimedToday() {
+            if (gameData.dailyRewards.lastClaim === 0) return false;
+            
+            const now = new Date();
+            const lastClaim = new Date(gameData.dailyRewards.lastClaim);
+            
+            return now.toDateString() === lastClaim.toDateString();
+        }
+
+        function claimDailyReward() {
+            if (!canClaimToday()) {
+                showNotification("You can only claim once per day!");
+                return;
+            }
+            
+            if (isRewardClaimedToday()) {
+                showNotification("Already claimed today!");
+                return;
+            }
+            
+            const currentReward = dailyRewards[gameData.dailyRewards.day - 1];
+            
+            if (currentReward.type === 'tokens') {
+                gameData.luckTokens += currentReward.reward;
+            } else {
+                gameData.balance += currentReward.reward;
+            }
+            
+            gameData.dailyRewards.lastClaim = Date.now();
+            gameData.dailyRewards.streak++;
+            gameData.dailyRewards.day = (gameData.dailyRewards.day % 7) + 1;
+            
+            showNotification(`Daily reward claimed! +${currentReward.reward} ${currentReward.type === 'tokens' ? 'tokens' : '$'}`);
+            updateUI();
+            generateDailyRewards();
+            saveGameData();
+        }
+
+        // Check Vault Expiry
+        function checkVaultExpiry() {
+            const vaultEndDate = new Date('2024-09-30');
+            const now = new Date();
+            
+            if (now > vaultEndDate) {
+                // Make obsidian vault skins sellable
+                gameData.inventory.forEach(skin => {
+                    if (['volcanic', 'obsidian', 'shattered'].includes(skin.rarity)) {
+                        skin.sellable = true;
+                    }
+                });
+                saveGameData();
+            }
+        }
+
+        // Premium Toggle
+        function togglePremium() {
+            gameData.premium = !gameData.premium;
+            showNotification(gameData.premium ? "Premium activated!" : "Premium deactivated!");
+            updateUI();
+            generateCases();
+            saveGameData();
+        }
+
+        // Sound Toggle
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('sound-toggle').textContent = soundEnabled ? '🔊' : '🔇';
+        }
+
+        // Show Notification
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.remove(), 4000);
+        }
+
+        // Auto-save every 30 seconds
+        setInterval(saveGameData, 30000);
+
+        // Initialize game when page loads
+        window.onload = initGame;
+        window.onbeforeunload = saveGameData;
+    </script>
+</body>
+</html>
