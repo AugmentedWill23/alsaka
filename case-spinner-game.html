@@ -285,6 +285,73 @@
         .rarity-yellow { background: linear-gradient(45deg, #ff9800, #f57c00); }
         .rarity-golden { background: linear-gradient(45deg, #ffd700, #ffb300); }
         .rarity-black { background: linear-gradient(45deg, #000000, #424242); }
+        .rarity-volcanic { 
+            background: linear-gradient(45deg, #ff4500, #8b0000, #ff6347); 
+            animation: volcanic 2s ease-in-out infinite; 
+            box-shadow: 0 0 20px #ff4500;
+        }
+        .rarity-obsidian { 
+            background: linear-gradient(45deg, #2f2f2f, #000000, #4a4a4a); 
+            animation: obsidianPulse 3s ease-in-out infinite; 
+            box-shadow: 0 0 15px #000000;
+        }
+        .rarity-shattered { 
+            background: linear-gradient(45deg, #1a1a1a, #333333, #666666); 
+            animation: shatter 1.5s ease-in-out infinite; 
+            box-shadow: 0 0 10px #333333;
+        }
+
+        @keyframes volcanic {
+            0%, 100% { box-shadow: 0 0 20px #ff4500; }
+            50% { box-shadow: 0 0 40px #ff6347, 0 0 60px #ff4500; }
+        }
+
+        @keyframes obsidianPulse {
+            0%, 100% { box-shadow: 0 0 15px #000000; }
+            50% { box-shadow: 0 0 30px #4a4a4a, 0 0 45px #2f2f2f; }
+        }
+
+        @keyframes shatter {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 10px #333333; }
+            50% { transform: scale(1.05); box-shadow: 0 0 25px #666666; }
+        }
+
+        .daily-reward-day {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .daily-reward-day.claimed {
+            border-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.2);
+        }
+
+        .daily-reward-day.current {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.2);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .event-timer {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 10px;
+            display: inline-block;
+        }
 
         .skin-name {
             font-size: 12px;
@@ -1410,735 +1477,121 @@
                 rollBtn.textContent = `Roll Vault Case (${gameData.vaultKeys}/1 Key)`;
             }
         }
-                icon: "👑",
-                price: 1200,
-                theme: "royal",
-                drops: {
-                    red: 0.3,
-                    yellow: 0.25,
-                    golden: 0.35,
-                    black: 0.1
-                }
-            },
-            // Event Cases (with timers)
-            {
-                name: "Halloween Case",
-                icon: "🎃",
-                price: 400,
-                isEvent: true,
-                eventEnd: Date.now() + (14 * 24 * 60 * 60 * 1000), // 2 weeks from now
-                drops: {
-                    purple: 0.3,
-                    pink: 0.25,
-                    red: 0.2,
-                    yellow: 0.15,
-                    golden: 0.08,
-                    event: 0.02
-                }
-            },
-            {
-                name: "Christmas Case",
-                icon: "🎄",
-                price: 450,
-                isEvent: true,
-                eventEnd: Date.now() + (14 * 24 * 60 * 60 * 1000),
-                drops: {
-                    purple: 0.25,
-                    pink: 0.3,
-                    red: 0.2,
-                    yellow: 0.15,
-                    golden: 0.08,
-                    event: 0.02
-                }
-            },
-            // Premium-only cases
-            {
-                name: "VIP Vault",
-                icon: "🔐",
-                price: 800,
-                premiumOnly: true,
-                drops: {
-                    pink: 0.3,
-                    red: 0.25,
-                    yellow: 0.2,
-                    golden: 0.2,
-                    black: 0.05
-                }
-            },
-            {
-                name: "Collector's Edition",
-                icon: "💼",
-                price: 1500,
-                premiumOnly: true,
-                drops: {
-                    red: 0.25,
-                    yellow: 0.25,
-                    golden: 0.35,
-                    black: 0.15
-                }
-            }
-        ];
 
-        // Net Worth Ranks
-        const netWorthRanks = [
-            { name: "Bronze", threshold: 0, color: "#CD7F32", perks: ["Basic AFK income"] },
-            { name: "Silver", threshold: 10000, color: "#C0C0C0", perks: ["10% faster spins", "+1 daily quest"] },
-            { name: "Gold", threshold: 50000, color: "#FFD700", perks: ["20% faster spins", "+2 daily quests", "5% marketplace discount"] },
-            { name: "Diamond", threshold: 100000, color: "#B9F2FF", perks: ["30% faster spins", "+3 daily quests", "10% marketplace discount", "Extra luck token daily"] },
-            { name: "Obsidian", threshold: 500000, color: "#36454F", perks: ["50% faster spins", "+5 daily quests", "20% marketplace discount", "+2 luck tokens daily", "Exclusive cases"] }
-        ];
-
-        // Achievement System
-        const achievements = [
-            { id: "first_case", name: "First Steps", description: "Open your first case", reward: 100, type: "currency", condition: "casesOpened", target: 1 },
-            { id: "case_opener", name: "Case Opener", description: "Open 100 cases", reward: 1000, type: "currency", condition: "casesOpened", target: 100 },
-            { id: "case_master", name: "Case Master", description: "Open 1000 cases", reward: 5000, type: "currency", condition: "casesOpened", target: 1000 },
-            { id: "big_spender", name: "Big Spender", description: "Spend $10,000", reward: 3, type: "tokens", condition: "totalSpent", target: 10000 },
-            { id: "millionaire", name: "Millionaire", description: "Reach $1,000,000 net worth", reward: 10000, type: "currency", condition: "networth", target: 1000000 },
-            { id: "rare_collector", name: "Rare Collector", description: "Pull a Golden rarity skin", reward: 5, type: "tokens", condition: "rarest", target: "golden" },
-            { id: "legend", name: "Legend", description: "Pull a Black rarity skin", reward: 10, type: "tokens", condition: "rarest", target: "black" },
-            { id: "battle_winner", name: "Battle Winner", description: "Win 10 battles", reward: 2000, type: "currency", condition: "battleWins", target: 10 },
-            { id: "trader", name: "Trader", description: "Make 50 trades", reward: 1500, type: "currency", condition: "marketTrades", target: 50 }
-        ];
-
-        // Daily Rewards Calendar
-        const dailyRewards = [
-            { day: 1, reward: 100, type: "currency" },
-            { day: 2, reward: 1, type: "tokens" },
-            { day: 3, reward: 200, type: "currency" },
-            { day: 4, reward: 50, type: "fragments" },
-            { day: 5, reward: 500, type: "currency" },
-            { day: 6, reward: 2, type: "tokens" },
-            { day: 7, reward: 1000, type: "currency" }
-        ];
-
-        // Quest Templates
-        const questTemplates = [
-            { id: "openCases", name: "Case Opener", description: "Open 10 cases", target: 10, reward: 500, type: "currency" },
-            { id: "battleWins", name: "Battle Master", description: "Win 5 battles", target: 5, reward: 2, type: "tokens" },
-            { id: "marketTrades", name: "Trader", description: "Make 3 marketplace trades", target: 3, reward: 1000, type: "currency" },
-            { id: "spendMoney", name: "Big Spender", description: "Spend $2000", target: 2000, reward: 1, type: "tokens" }
-        ];
-
-        // Initialize Game
-        function initGame() {
-            loadGameData();
-            generateCases();
-            generateQuests();
-            generateAchievements();
-            generateMarketplace();
-            generateLeaderboard();
-            generateDailyRewards();
-            generateFusionSlots();
-            updateUI();
-            updateNetWorthRank();
-            startAFKTimer();
-            checkEventCases();
+        // Fixed Daily Rewards System
+        function canClaimToday() {
+            if (gameData.dailyRewards.lastClaim === 0) return true;
             
-            // Auto-save every 30 seconds
-            setInterval(saveGameData, 30000);
+            const now = Date.now();
+            const lastClaim = gameData.dailyRewards.lastClaim;
+            const diffTime = now - lastClaim;
+            const diffHours = diffTime / (1000 * 60 * 60);
             
-            // Check for daily rewards reset
-            checkDailyReset();
+            return diffHours >= 24;
         }
 
-        // Load/Save Game Data
-        function loadGameData() {
-            const saved = localStorage.getItem('caseSpinnerGame');
-            if (saved) {
-                gameData = { ...gameData, ...JSON.parse(saved) };
-            }
+        function isRewardClaimedToday() {
+            if (gameData.dailyRewards.lastClaim === 0) return false;
+            
+            const now = Date.now();
+            const lastClaim = gameData.dailyRewards.lastClaim;
+            const diffTime = now - lastClaim;
+            const diffHours = diffTime / (1000 * 60 * 60);
+            
+            return diffHours < 24;
         }
 
-        function saveGameData() {
-            gameData.lastSave = Date.now();
-            localStorage.setItem('caseSpinnerGame', JSON.stringify(gameData));
+        function getTimeUntilNextReward() {
+            if (gameData.dailyRewards.lastClaim === 0) return "Available now!";
+            
+            const now = Date.now();
+            const lastClaim = gameData.dailyRewards.lastClaim;
+            const diffTime = now - lastClaim;
+            const hoursLeft = 24 - (diffTime / (1000 * 60 * 60));
+            
+            if (hoursLeft <= 0) return "Available now!";
+            
+            const hours = Math.floor(hoursLeft);
+            const minutes = Math.floor((hoursLeft - hours) * 60);
+            
+            return `${hours}h ${minutes}m`;
         }
 
-        // Screen Navigation
-        function showScreen(screenName) {
-            // Hide all screens
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
+        function updateDailyRewardTimer() {
+            const claimBtn = document.getElementById('daily-claim-btn');
+            if (!claimBtn) return;
             
-            // Remove active class from all nav buttons
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Show selected screen
-            document.getElementById(screenName).classList.add('active');
-            
-            // Add active class to clicked button
-            event.target.classList.add('active');
-            
-            // Update screen content
-            if (screenName === 'inventory') {
-                updateInventory();
-            } else if (screenName === 'marketplace') {
-                updateMarketplace();
-            }
-        }
-
-        // Generate Cases
-        function generateCases() {
-            const caseGrid = document.getElementById('case-grid');
-            caseGrid.innerHTML = '';
-            
-            caseDatabase.forEach((caseData, index) => {
-                // Check if case is available
-                if (caseData.premiumOnly && !gameData.premium) return;
-                if (caseData.isEvent && Date.now() > caseData.eventEnd) return;
-                
-                const caseCard = document.createElement('div');
-                caseCard.className = 'case-card';
-                
-                let eventTimer = '';
-                if (caseData.isEvent) {
-                    const timeLeft = caseData.eventEnd - Date.now();
-                    const days = Math.floor(timeLeft / (24 * 60 * 60 * 1000));
-                    const hours = Math.floor((timeLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-                    eventTimer = `<div class="event-timer">${days}d ${hours}h left</div>`;
-                }
-                
-                let pityDisplay = '';
-                const pityCount = gameData.pityCounter[caseData.name] || 0;
-                if (pityCount > 0) {
-                    pityDisplay = `<div class="pity-counter">Pity: ${pityCount}/50</div>`;
-                }
-                
-                caseCard.innerHTML = `
-                    <div class="case-image">${caseData.icon}</div>
-                    <div class="case-name">${caseData.name}</div>
-                    <div class="case-price">$${caseData.price}</div>
-                    ${eventTimer}
-                    ${pityDisplay}
-                `;
-                caseCard.onclick = () => openCase(index);
-                caseGrid.appendChild(caseCard);
-            });
-        }
-
-        // Open Case
-        function openCase(caseIndex) {
-            const caseData = caseDatabase[caseIndex];
-            
-            if (gameData.balance < caseData.price) {
-                showNotification("Not enough balance!");
-                return;
-            }
-            
-            // Check premium requirement
-            if (caseData.premiumOnly && !gameData.premium) {
-                showNotification("Premium required for this case!");
-                return;
-            }
-            
-            gameData.balance -= caseData.price;
-            gameData.quests.openCases++;
-            gameData.totalSpent += caseData.price;
-            gameData.casesOpened++;
-            
-            // Update pity counter
-            if (!gameData.pityCounter[caseData.name]) {
-                gameData.pityCounter[caseData.name] = 0;
-            }
-            gameData.pityCounter[caseData.name]++;
-            
-            document.getElementById('case-title').textContent = `Opening ${caseData.name}...`;
-            document.getElementById('spinner-modal').style.display = 'block';
-            
-            // Store current case for spinning
-            window.currentCase = caseData;
-            updateUI();
-            checkAchievements();
-        }
-
-        // Spin Case
-        function spinCase() {
-            const spinButton = document.getElementById('spin-button');
-            const spinner = document.getElementById('spinner-wheel');
-            
-            spinButton.disabled = true;
-            spinButton.textContent = 'SPINNING...';
-            
-            // Determine rarity based on case drop rates
-            const rarity = determineRarity(window.currentCase.drops, window.currentCase.name);
-            const skinPool = skinDatabase[rarity];
-            const wonSkin = skinPool[Math.floor(Math.random() * skinPool.length)];
-            
-            // Track rarest pull
-            const rarityOrder = ['white', 'blue', 'purple', 'pink', 'red', 'yellow', 'golden', 'black', 'event'];
-            if (rarityOrder.indexOf(rarity) > rarityOrder.indexOf(gameData.rarestPull.rarity)) {
-                gameData.rarestPull = { name: wonSkin.name, rarity: rarity };
-            }
-            
-            // Add spin animation
-            const spinDuration = gameData.premium ? 2000 : 3000;
-            spinner.style.transition = `transform ${spinDuration}ms cubic-bezier(0.17, 0.67, 0.12, 0.99)`;
-            spinner.style.transform = `rotate(${1800 + Math.random() * 360}deg)`;
-            
-            // Create particles for higher rarities
-            if (['red', 'yellow', 'golden', 'black'].includes(rarity)) {
-                createParticles();
-            }
-            
-            setTimeout(() => {
-                // Add skin to inventory
-                const skinWithRarity = { ...wonSkin, rarity };
-                gameData.inventory.push(skinWithRarity);
-                
-                // Show reward
-                showReward(skinWithRarity);
-                
-                // Reset spinner
-                spinner.style.transition = 'none';
-                spinner.style.transform = 'rotate(0deg)';
-                spinButton.disabled = false;
-                spinButton.textContent = 'SPIN!';
-                
-                updateUI();
-                checkQuests();
-                saveGameData();
-            }, spinDuration);
-        }
-
-        // Determine Rarity with Pity System
-        function determineRarity(dropRates, caseName) {
-            const pityCount = gameData.pityCounter[caseName] || 0;
-            
-            // Pity system: guaranteed rare after 50 cases
-            if (pityCount >= 50) {
-                gameData.pityCounter[caseName] = 0;
-                const rareRarities = Object.keys(dropRates).filter(r => ['red', 'yellow', 'golden', 'black'].includes(r));
-                return rareRarities[Math.floor(Math.random() * rareRarities.length)];
-            }
-            
-            const random = Math.random();
-            let cumulative = 0;
-            
-            // Apply luck token bonus and rank bonus
-            const rank = getCurrentRank();
-            const luckMultiplier = gameData.luckTokens > 0 ? 1.5 : 1;
-            const rankMultiplier = rank.name === 'Bronze' ? 1 : 1 + (netWorthRanks.indexOf(rank) * 0.1);
-            
-            for (const [rarity, rate] of Object.entries(dropRates)) {
-                const adjustedRate = rate * (rarity !== 'white' ? luckMultiplier * rankMultiplier : 1);
-                cumulative += adjustedRate;
-                if (random <= cumulative) {
-                    // Consume luck token for rare drops
-                    if (gameData.luckTokens > 0 && ['red', 'yellow', 'golden', 'black', 'event'].includes(rarity)) {
-                        gameData.luckTokens--;
-                    }
-                    
-                    // Reset pity counter on rare drop
-                    if (['red', 'yellow', 'golden', 'black', 'event'].includes(rarity)) {
-                        gameData.pityCounter[caseName] = 0;
-                    }
-                    
-                    return rarity;
-                }
-            }
-            
-            return 'white'; // Fallback
-        }
-
-        // Show Reward
-        function showReward(skin) {
-            document.getElementById('reward-icon').className = `skin-icon rarity-${skin.rarity}`;
-            document.getElementById('reward-icon').textContent = skin.icon;
-            document.getElementById('reward-name').textContent = skin.name;
-            document.getElementById('reward-value').textContent = `Value: $${skin.value}`;
-            
-            document.getElementById('spinner-modal').style.display = 'none';
-            document.getElementById('reward-modal').style.display = 'block';
-        }
-
-        // Close Modals
-        function closeSpinner() {
-            document.getElementById('spinner-modal').style.display = 'none';
-        }
-
-        function closeReward() {
-            document.getElementById('reward-modal').style.display = 'none';
-        }
-
-        // Update UI
-        function updateUI() {
-            document.getElementById('balance').textContent = `$${gameData.balance.toLocaleString()}`;
-            document.getElementById('tokens').textContent = gameData.luckTokens;
-            document.getElementById('fragments').textContent = gameData.fragments;
-            
-            // Calculate net worth
-            const inventoryValue = gameData.inventory.reduce((sum, skin) => sum + skin.value, 0);
-            const netWorth = gameData.balance + inventoryValue;
-            document.getElementById('networth').textContent = `$${netWorth.toLocaleString()}`;
-            
-            // Update rank
-            const rank = getCurrentRank();
-            document.getElementById('rank').textContent = rank.name;
-            document.getElementById('rank').style.color = rank.color;
-            
-            // Update premium status
-            document.getElementById('premium-status').textContent = gameData.premium ? 'Premium' : 'Free';
-            document.getElementById('premium-status').style.background = gameData.premium 
-                ? 'linear-gradient(45deg, #ffd700, #ffed4e)' 
-                : 'rgba(255, 255, 255, 0.2)';
-        }
-
-        // Update Inventory
-        function updateInventory() {
-            const inventoryGrid = document.getElementById('inventory-grid');
-            inventoryGrid.innerHTML = '';
-            
-            gameData.inventory.forEach((skin, index) => {
-                const skinItem = document.createElement('div');
-                skinItem.className = 'skin-item';
-                skinItem.innerHTML = `
-                    <div class="skin-icon rarity-${skin.rarity}">${skin.icon}</div>
-                    <div class="skin-name">${skin.name}</div>
-                    <div class="skin-value">$${skin.value}</div>
-                `;
-                skinItem.onclick = () => sellSkin(index);
-                inventoryGrid.appendChild(skinItem);
-            });
-        }
-
-        // Filter Inventory
-        function filterInventory(rarity) {
-            // Update filter buttons
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            const inventoryGrid = document.getElementById('inventory-grid');
-            inventoryGrid.innerHTML = '';
-            
-            const filteredSkins = rarity === 'all' 
-                ? gameData.inventory 
-                : gameData.inventory.filter(skin => skin.rarity === rarity);
-            
-            filteredSkins.forEach((skin, index) => {
-                const skinItem = document.createElement('div');
-                skinItem.className = 'skin-item';
-                skinItem.innerHTML = `
-                    <div class="skin-icon rarity-${skin.rarity}">${skin.icon}</div>
-                    <div class="skin-name">${skin.name}</div>
-                    <div class="skin-value">$${skin.value}</div>
-                `;
-                inventoryGrid.appendChild(skinItem);
-            });
-        }
-
-        // Sell Skin
-        function sellSkin(index) {
-            const skin = gameData.inventory[index];
-            const sellPrice = Math.floor(skin.value * 0.8); // 80% of value
-            
-            if (confirm(`Sell ${skin.name} for $${sellPrice}?`)) {
-                gameData.balance += sellPrice;
-                gameData.inventory.splice(index, 1);
-                gameData.quests.marketTrades++;
-                
-                showNotification(`Sold ${skin.name} for $${sellPrice}!`);
-                updateInventory();
-                updateUI();
-                checkQuests();
-                saveGameData();
-            }
-        }
-
-        // Generate Marketplace
-        function generateMarketplace() {
-            const listings = [];
-            
-            // Generate AI bot listings
-            for (let i = 0; i < 20; i++) {
-                const rarities = Object.keys(skinDatabase);
-                const randomRarity = rarities[Math.floor(Math.random() * rarities.length)];
-                const skinPool = skinDatabase[randomRarity];
-                const randomSkin = skinPool[Math.floor(Math.random() * skinPool.length)];
-                
-                const markup = 1.1 + Math.random() * 0.4; // 110-150% of base value
-                const price = Math.floor(randomSkin.value * markup);
-                
-                listings.push({
-                    ...randomSkin,
-                    rarity: randomRarity,
-                    price: price,
-                    seller: `Bot${Math.floor(Math.random() * 1000)}`
-                });
-            }
-            
-            window.marketplaceListings = listings;
-        }
-
-        // Update Marketplace
-        function updateMarketplace() {
-            const container = document.getElementById('marketplace-listings');
-            container.innerHTML = '';
-            
-            window.marketplaceListings.forEach((item, index) => {
-                const listingDiv = document.createElement('div');
-                listingDiv.className = 'marketplace-item';
-                listingDiv.innerHTML = `
-                    <div class="skin-icon rarity-${item.rarity}">${item.icon}</div>
-                    <div class="item-info">
-                        <div class="item-name">${item.name}</div>
-                        <div class="item-price">$${item.price}</div>
-                        <small>Seller: ${item.seller}</small>
-                    </div>
-                    <button class="buy-btn" onclick="buyItem(${index})">Buy</button>
-                `;
-                container.appendChild(listingDiv);
-            });
-        }
-
-        // Buy Item
-        function buyItem(index) {
-            const item = window.marketplaceListings[index];
-            
-            if (gameData.balance < item.price) {
-                showNotification("Not enough balance!");
-                return;
-            }
-            
-            gameData.balance -= item.price;
-            gameData.inventory.push({
-                name: item.name,
-                icon: item.icon,
-                value: item.value,
-                rarity: item.rarity
-            });
-            gameData.quests.marketTrades++;
-            
-            // Remove item from marketplace
-            window.marketplaceListings.splice(index, 1);
-            
-            showNotification(`Bought ${item.name} for $${item.price}!`);
-            updateMarketplace();
-            updateUI();
-            checkQuests();
-            saveGameData();
-        }
-
-        // Start Battle
-        function startBattle() {
-            if (gameData.balance < 500) {
-                showNotification("Not enough balance for battle!");
-                return;
-            }
-            
-            gameData.balance -= 500;
-            
-            // Generate AI opponents
-            const opponents = [
-                { name: "SkinHunter", avatar: "🎯", value: 0 },
-                { name: "CaseKing", avatar: "👑", value: 0 },
-                { name: "LootMaster", avatar: "💎", value: 0 }
-            ];
-            
-            // Simulate battle - everyone opens the same case
-            const battleCase = caseDatabase[1]; // Premium case
-            let playerValue = 0;
-            
-            // Player opens case
-            const playerRarity = determineRarity(battleCase.drops);
-            const playerSkin = skinDatabase[playerRarity][Math.floor(Math.random() * skinDatabase[playerRarity].length)];
-            playerValue = playerSkin.value;
-            
-            // Add to player inventory
-            gameData.inventory.push({ ...playerSkin, rarity: playerRarity });
-            
-            // AI opponents open cases
-            opponents.forEach(opponent => {
-                const aiRarity = determineRarity(battleCase.drops);
-                const aiSkin = skinDatabase[aiRarity][Math.floor(Math.random() * skinDatabase[aiRarity].length)];
-                opponent.value = aiSkin.value;
-                opponent.skin = aiSkin;
-                opponent.rarity = aiRarity;
-            });
-            
-            // Determine winner
-            const allValues = [playerValue, ...opponents.map(o => o.value)];
-            const maxValue = Math.max(...allValues);
-            const isPlayerWinner = playerValue === maxValue;
-            
-            if (isPlayerWinner) {
-                const winnings = 500 + (opponents.length * 100);
-                gameData.balance += winnings;
-                gameData.quests.battleWins++;
-                showNotification(`🏆 Battle Won! +$${winnings}`);
+            if (canClaimToday() && !isRewardClaimedToday()) {
+                claimBtn.textContent = "Claim Today's Reward";
+                claimBtn.disabled = false;
             } else {
-                const winner = opponents.find(o => o.value === maxValue);
-                showNotification(`💔 Battle Lost! ${winner.name} won with ${winner.skin.name}`);
+                const timeLeft = getTimeUntilNextReward();
+                claimBtn.textContent = `Next reward in: ${timeLeft}`;
+                claimBtn.disabled = true;
+            }
+        }
+
+        function claimDailyReward() {
+            if (!canClaimToday()) {
+                showNotification("You can only claim once per day!");
+                return;
             }
             
+            if (isRewardClaimedToday()) {
+                showNotification("Already claimed today!");
+                return;
+            }
+            
+            const currentReward = dailyRewards[gameData.dailyRewards.day - 1];
+            
+            if (currentReward.type === 'tokens') {
+                gameData.luckTokens += currentReward.reward;
+            } else {
+                gameData.balance += currentReward.reward;
+            }
+            
+            gameData.dailyRewards.lastClaim = Date.now();
+            gameData.dailyRewards.streak++;
+            gameData.dailyRewards.day = (gameData.dailyRewards.day % 7) + 1;
+            
+            showNotification(`Daily reward claimed! +${currentReward.reward} ${currentReward.type === 'tokens' ? 'tokens' : '$'}`);
             updateUI();
-            checkQuests();
+            generateDailyRewards();
             saveGameData();
         }
 
-        // Generate Quests
-        function generateQuests() {
-            const questList = document.getElementById('quest-list');
-            questList.innerHTML = '';
+        // Generate Daily Rewards
+        function generateDailyRewards() {
+            const calendar = document.getElementById('daily-calendar');
+            if (!calendar) return;
             
-            questTemplates.forEach(template => {
-                const progress = gameData.quests[template.id] || 0;
-                const isCompleted = progress >= template.target;
+            calendar.innerHTML = '';
+            
+            dailyRewards.forEach((reward, index) => {
+                const day = index + 1;
+                const isToday = canClaimToday() && day === gameData.dailyRewards.day;
+                const isClaimed = isRewardClaimedToday() && day === gameData.dailyRewards.day;
                 
-                const questDiv = document.createElement('div');
-                questDiv.className = 'quest-item';
-                questDiv.innerHTML = `
-                    <div>
-                        <div style="font-weight: bold;">${template.name}</div>
-                        <div style="font-size: 14px; opacity: 0.8;">${template.description}</div>
-                        <div class="quest-progress">
-                            <div class="quest-progress-bar" style="width: ${Math.min(progress / template.target * 100, 100)}%;"></div>
-                        </div>
-                        <div style="font-size: 12px;">${progress}/${template.target}</div>
-                    </div>
-                    <div>
-                        ${isCompleted ? 
-                            `<button class="buy-btn" onclick="claimQuest('${template.id}')">Claim</button>` :
-                            `<div style="color: #4ecdc4;">+${template.reward} ${template.type === 'tokens' ? 'tokens' : '$'}</div>`
-                        }
-                    </div>
+                const dayDiv = document.createElement('div');
+                dayDiv.className = `daily-reward-day ${isClaimed ? 'claimed' : ''} ${isToday && !isClaimed ? 'current' : ''}`;
+                dayDiv.innerHTML = `
+                    <div style="font-weight: bold;">Day ${day}</div>
+                    <div style="font-size: 24px; margin: 10px 0;">${reward.type === 'tokens' ? '🍀' : '💰'}</div>
+                    <div style="font-size: 14px;">${reward.reward} ${reward.type === 'tokens' ? 'Tokens' : '$'}</div>
                 `;
-                questList.appendChild(questDiv);
+                calendar.appendChild(dayDiv);
             });
-        }
-
-        // Check Quests
-        function checkQuests() {
-            generateQuests(); // Refresh quest display
-        }
-
-        // Claim Quest
-        function claimQuest(questId) {
-            const template = questTemplates.find(t => t.id === questId);
-            const progress = gameData.quests[questId] || 0;
-            
-            if (progress >= template.target) {
-                if (template.type === 'tokens') {
-                    gameData.luckTokens += template.reward;
-                } else {
-                    gameData.balance += template.reward;
-                }
-                
-                // Reset quest progress
-                gameData.quests[questId] = 0;
-                
-                showNotification(`Quest completed! +${template.reward} ${template.type === 'tokens' ? 'tokens' : '$'}`);
-                updateUI();
-                generateQuests();
-                saveGameData();
-            }
-        }
-
-        // Toggle Premium
-        function togglePremium() {
-            gameData.premium = !gameData.premium;
-            showNotification(gameData.premium ? "Premium activated!" : "Premium deactivated!");
-            updateUI();
-            saveGameData();
-        }
-
-        // AFK Timer
-        function startAFKTimer() {
-            setInterval(() => {
-                if (gameData.afkTimer > 0) {
-                    gameData.afkTimer--;
-                    updateAFKDisplay();
-                } else {
-                    // Time to claim reward
-                    document.getElementById('claim-afk').style.display = 'block';
-                    document.getElementById('afk-timer').textContent = "Ready!";
-                }
-            }, 1000);
-        }
-
-        function updateAFKDisplay() {
-            const minutes = Math.floor(gameData.afkTimer / 60);
-            const seconds = gameData.afkTimer % 60;
-            document.getElementById('afk-timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        }
-
-        function claimAFK() {
-            const reward = gameData.premium ? 2 : 1;
-            gameData.balance += reward;
-            gameData.afkTimer = 1800; // Reset to 30 minutes
-            
-            document.getElementById('claim-afk').style.display = 'none';
-            showNotification(`AFK reward claimed! +$${reward}`);
-            updateUI();
-            saveGameData();
-        }
-
-        // Generate Leaderboard
-        function generateLeaderboard() {
-            const leaderboardData = [
-                { rank: 1, player: "You", networth: gameData.balance + gameData.inventory.reduce((sum, skin) => sum + skin.value, 0), rarest: "Obsidian Karambit" },
-                { rank: 2, player: "SkinLord", networth: 45000, rarest: "Golden Dragon" },
-                { rank: 3, player: "CaseMaster", networth: 38000, rarest: "Void Emperor" },
-                { rank: 4, player: "LootKing", networth: 32000, rarest: "Phoenix Wing" },
-                { rank: 5, player: "SpinWizard", networth: 28000, rarest: "Midas Touch" }
-            ];
-            
-            const tbody = document.getElementById('leaderboard-body');
-            tbody.innerHTML = '';
-            
-            leaderboardData.forEach(entry => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>#${entry.rank}</td>
-                    <td>${entry.player}</td>
-                    <td>$${entry.networth.toLocaleString()}</td>
-                    <td>${entry.rarest}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // Leave Clan
-        function leaveClan() {
-            if (confirm("Are you sure you want to leave Shadow Ops?")) {
-                gameData.clan = null;
-                showNotification("Left clan successfully!");
-                document.getElementById('clan-name').textContent = "No Clan";
-                saveGameData();
-            }
-        }
-
-        // Create Particles
-        function createParticles() {
-            for (let i = 0; i < 20; i++) {
-                setTimeout(() => {
-                    const particle = document.createElement('div');
-                    particle.className = 'particle';
-                    particle.style.left = Math.random() * window.innerWidth + 'px';
-                    particle.style.top = Math.random() * window.innerHeight + 'px';
-                    document.body.appendChild(particle);
-                    
-                    setTimeout(() => particle.remove(), 2000);
-                }, i * 100);
-            }
-        }
-
-        // Show Notification
-        function showNotification(message) {
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
         }
 
         // Net Worth Rank System
+        const netWorthRanks = [
+            { name: "Bronze", threshold: 0, color: "#CD7F32" },
+            { name: "Silver", threshold: 1000, color: "#C0C0C0" },
+            { name: "Gold", threshold: 10000, color: "#FFD700" },
+            { name: "Diamond", threshold: 100000, color: "#B9F2FF" },
+            { name: "Obsidian", threshold: 1000000, color: "#36454F" }
+        ];
+
         function getCurrentRank() {
             const inventoryValue = gameData.inventory.reduce((sum, skin) => sum + skin.value, 0);
             const netWorth = gameData.balance + inventoryValue;
@@ -2151,367 +1604,76 @@
             return netWorthRanks[0];
         }
 
-        function updateNetWorthRank() {
-            const newRank = getCurrentRank();
-            if (newRank.name !== gameData.netWorthRank) {
-                gameData.netWorthRank = newRank.name;
-                showNotification(`🎉 Rank up! You are now ${newRank.name}!`);
-            }
-        }
-
-        // Achievement System
-        function generateAchievements() {
-            const achievementList = document.getElementById('achievement-list');
-            if (!achievementList) return;
+        // Generate Cases with Enhanced Filtering
+        function generateCases() {
+            const caseGrid = document.getElementById('case-grid');
+            caseGrid.innerHTML = '';
             
-            achievementList.innerHTML = '';
-            
-            achievements.forEach(achievement => {
-                const isCompleted = checkAchievementCondition(achievement);
-                const isClaimed = gameData.achievements.includes(achievement.id);
+            caseDatabase.forEach((caseData, index) => {
+                if (caseData.isVaultCase) return; // Skip vault cases in main grid
+                if (caseData.premiumOnly && !gameData.premium) return;
+                if (caseData.isEvent && Date.now() > caseData.eventEnd) return;
                 
-                const achievementDiv = document.createElement('div');
-                achievementDiv.className = `achievement-item ${isCompleted && !isClaimed ? 'completed' : ''} ${isClaimed ? 'claimed' : ''}`;
-                achievementDiv.innerHTML = `
-                    <div>
-                        <div style="font-weight: bold;">${achievement.name}</div>
-                        <div style="font-size: 14px; opacity: 0.8;">${achievement.description}</div>
-                        <div style="color: #4ecdc4; font-size: 12px;">Reward: ${achievement.reward} ${achievement.type === 'tokens' ? 'tokens' : '$'}</div>
+                const caseCard = document.createElement('div');
+                caseCard.className = 'case-card';
+                
+                let eventTimer = '';
+                if (caseData.isEvent) {
+                    const timeLeft = caseData.eventEnd - Date.now();
+                    const days = Math.floor(timeLeft / (24 * 60 * 60 * 1000));
+                    eventTimer = `<div class="event-timer">${days} days left</div>`;
+                }
+                
+                let premiumBadge = '';
+                if (caseData.premiumOnly) {
+                    premiumBadge = '<div style="background: #ffd700; color: #000; padding: 5px 10px; border-radius: 10px; font-size: 10px; font-weight: bold; margin-top: 5px;">PREMIUM</div>';
+                }
+                
+                caseCard.innerHTML = `
+                    <div class="case-image">
+                        <img src="${caseData.icon}" alt="${caseData.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 15px;">
                     </div>
-                    <div>
-                        ${isClaimed ? 
-                            '<span style="color: #4ecdc4;">✓ Claimed</span>' :
-                            isCompleted ? 
-                                `<button class="buy-btn" onclick="claimAchievement('${achievement.id}')">Claim</button>` :
-                                '<span style="opacity: 0.5;">Locked</span>'
-                        }
-                    </div>
+                    <div class="case-name">${caseData.name}</div>
+                    <div class="case-price">$${caseData.price.toLocaleString()}</div>
+                    ${eventTimer}
+                    ${premiumBadge}
                 `;
-                achievementList.appendChild(achievementDiv);
+                caseCard.onclick = () => openCase(index);
+                caseGrid.appendChild(caseCard);
             });
         }
 
-        function checkAchievementCondition(achievement) {
-            switch (achievement.condition) {
-                case 'casesOpened':
-                    return gameData.casesOpened >= achievement.target;
-                case 'totalSpent':
-                    return gameData.totalSpent >= achievement.target;
-                case 'battleWins':
-                    return gameData.quests.battleWins >= achievement.target;
-                case 'marketTrades':
-                    return gameData.quests.marketTrades >= achievement.target;
-                case 'networth':
-                    const inventoryValue = gameData.inventory.reduce((sum, skin) => sum + skin.value, 0);
-                    return (gameData.balance + inventoryValue) >= achievement.target;
-                case 'rarest':
-                    const rarityOrder = ['white', 'blue', 'purple', 'pink', 'red', 'yellow', 'golden', 'black', 'event'];
-                    return rarityOrder.indexOf(gameData.rarestPull.rarity) >= rarityOrder.indexOf(achievement.target);
-                default:
-                    return false;
-            }
-        }
-
-        function checkAchievements() {
-            achievements.forEach(achievement => {
-                if (!gameData.achievements.includes(achievement.id) && checkAchievementCondition(achievement)) {
-                    showNotification(`🏆 Achievement unlocked: ${achievement.name}!`);
-                }
-            });
-            generateAchievements();
-        }
-
-        function claimAchievement(achievementId) {
-            const achievement = achievements.find(a => a.id === achievementId);
-            if (!achievement || gameData.achievements.includes(achievementId)) return;
+        // Enhanced Determine Rarity with Pity System
+        function determineRarity(dropRates, caseName) {
+            const random = Math.random();
+            let cumulative = 0;
             
-            if (checkAchievementCondition(achievement)) {
-                if (achievement.type === 'tokens') {
-                    gameData.luckTokens += achievement.reward;
-                } else {
-                    gameData.balance += achievement.reward;
-                }
-                
-                gameData.achievements.push(achievementId);
-                showNotification(`Achievement claimed! +${achievement.reward} ${achievement.type === 'tokens' ? 'tokens' : '$'}`);
-                updateUI();
-                generateAchievements();
-                saveGameData();
-            }
-        }
-
-        // Daily Rewards System
-        function generateDailyRewards() {
-            const calendar = document.getElementById('daily-calendar');
-            if (!calendar) return;
+            // Apply luck token bonus and rank bonus
+            const rank = getCurrentRank();
+            const luckMultiplier = gameData.luckTokens > 0 ? 1.2 : 1;
+            const rankMultiplier = rank.name === 'Bronze' ? 1 : 1 + (netWorthRanks.indexOf(rank) * 0.05);
             
-            calendar.innerHTML = '';
-            
-            dailyRewards.forEach((reward, index) => {
-                const day = index + 1;
-                const isToday = day === gameData.dailyRewards.day;
-                const isClaimed = day < gameData.dailyRewards.day || (day === gameData.dailyRewards.day && isRewardClaimedToday());
-                
-                const dayDiv = document.createElement('div');
-                dayDiv.className = `daily-reward-day ${isClaimed ? 'claimed' : ''} ${isToday ? 'current' : ''}`;
-                dayDiv.innerHTML = `
-                    <div style="font-weight: bold;">Day ${day}</div>
-                    <div style="font-size: 24px; margin: 10px 0;">${getRewardIcon(reward.type)}</div>
-                    <div style="font-size: 14px;">${reward.reward} ${reward.type === 'tokens' ? 'Tokens' : reward.type === 'fragments' ? 'Fragments' : '$'}</div>
-                `;
-                calendar.appendChild(dayDiv);
-            });
-            
-            document.getElementById('streak-count').textContent = gameData.dailyRewards.streak;
-        }
-
-        function getRewardIcon(type) {
-            switch (type) {
-                case 'currency': return '💰';
-                case 'tokens': return '🍀';
-                case 'fragments': return '💎';
-                default: return '🎁';
-            }
-        }
-
-        function isRewardClaimedToday() {
-            const today = new Date().toDateString();
-            const lastClaim = new Date(gameData.dailyRewards.lastClaim).toDateString();
-            return today === lastClaim;
-        }
-
-        function checkDailyReset() {
-            const now = Date.now();
-            const lastClaim = gameData.dailyRewards.lastClaim;
-            const oneDayMs = 24 * 60 * 60 * 1000;
-            
-            if (now - lastClaim > oneDayMs) {
-                // Check if streak should continue or reset
-                if (now - lastClaim > 2 * oneDayMs) {
-                    // Missed a day, reset streak
-                    gameData.dailyRewards.streak = 0;
-                    gameData.dailyRewards.day = 1;
-                }
-            }
-        }
-
-        function claimDailyReward() {
-            if (isRewardClaimedToday()) {
-                showNotification("Already claimed today's reward!");
-                return;
-            }
-            
-            const currentReward = dailyRewards[gameData.dailyRewards.day - 1];
-            
-            switch (currentReward.type) {
-                case 'currency':
-                    gameData.balance += currentReward.reward;
-                    break;
-                case 'tokens':
-                    gameData.luckTokens += currentReward.reward;
-                    break;
-                case 'fragments':
-                    gameData.fragments += currentReward.reward;
-                    break;
-            }
-            
-            gameData.dailyRewards.lastClaim = Date.now();
-            gameData.dailyRewards.streak++;
-            gameData.dailyRewards.day = (gameData.dailyRewards.day % 7) + 1;
-            
-            showNotification(`Daily reward claimed! +${currentReward.reward} ${currentReward.type === 'tokens' ? 'tokens' : currentReward.type === 'fragments' ? 'fragments' : '$'}`);
-            updateUI();
-            generateDailyRewards();
-            saveGameData();
-        }
-
-        // Fusion System
-        let fusionSlots = [];
-
-        function generateFusionSlots() {
-            const slotsContainer = document.getElementById('fusion-slots');
-            if (!slotsContainer) return;
-            
-            slotsContainer.innerHTML = '';
-            fusionSlots = [];
-            
-            for (let i = 0; i < 5; i++) {
-                const slot = document.createElement('div');
-                slot.className = 'fusion-slot';
-                slot.innerHTML = '+';
-                slot.onclick = () => selectSkinForFusion(i);
-                slotsContainer.appendChild(slot);
-                fusionSlots.push(null);
-            }
-            
-            updateFragmentCount();
-        }
-
-        function updateFragmentCount() {
-            const fragmentElement = document.getElementById('fragment-count');
-            if (fragmentElement) {
-                fragmentElement.textContent = gameData.fragments;
-            }
-        }
-
-        function selectSkinForFusion(slotIndex) {
-            // Simple implementation - automatically fill with first available skins of same rarity
-            const availableRarities = ['white', 'blue', 'purple', 'pink', 'red', 'yellow', 'golden'];
-            
-            for (const rarity of availableRarities) {
-                const skinsOfRarity = gameData.inventory.filter(skin => skin.rarity === rarity);
-                if (skinsOfRarity.length >= 5) {
-                    // Fill all slots with this rarity
-                    for (let i = 0; i < 5; i++) {
-                        fusionSlots[i] = { ...skinsOfRarity[i], slotRarity: rarity };
-                        const slotElement = document.getElementById('fusion-slots').children[i];
-                        slotElement.innerHTML = skinsOfRarity[i].icon;
-                        slotElement.classList.add('filled');
+            for (const [rarity, rate] of Object.entries(dropRates)) {
+                const adjustedRate = rate * (rarity !== 'white' ? luckMultiplier * rankMultiplier : 1);
+                cumulative += adjustedRate;
+                if (random <= cumulative) {
+                    // Consume luck token for rare drops
+                    if (gameData.luckTokens > 0 && ['red', 'yellow', 'golden', 'black', 'volcanic', 'obsidian', 'shattered'].includes(rarity)) {
+                        gameData.luckTokens--;
                     }
-                    document.getElementById('fusion-btn').disabled = false;
-                    return;
+                    
+                    return rarity;
                 }
             }
             
-            showNotification("Need 5 skins of the same rarity to fuse!");
+            return 'white'; // Fallback
         }
 
-        function performFusion() {
-            if (fusionSlots.every(slot => slot !== null)) {
-                const rarity = fusionSlots[0].slotRarity;
-                const rarityOrder = ['white', 'blue', 'purple', 'pink', 'red', 'yellow', 'golden', 'black'];
-                const nextRarityIndex = rarityOrder.indexOf(rarity) + 1;
-                
-                if (nextRarityIndex >= rarityOrder.length) {
-                    showNotification("Cannot fuse higher than Golden rarity!");
-                    return;
-                }
-                
-                const nextRarity = rarityOrder[nextRarityIndex];
-                
-                // Remove fused skins from inventory
-                fusionSlots.forEach(fusedSkin => {
-                    const index = gameData.inventory.findIndex(skin => 
-                        skin.name === fusedSkin.name && skin.rarity === fusedSkin.rarity
-                    );
-                    if (index !== -1) {
-                        gameData.inventory.splice(index, 1);
-                    }
-                });
-                
-                // Add new skin
-                const nextRarityPool = skinDatabase[nextRarity];
-                const newSkin = nextRarityPool[Math.floor(Math.random() * nextRarityPool.length)];
-                gameData.inventory.push({ ...newSkin, rarity: nextRarity });
-                
-                showNotification(`Fusion successful! Got ${newSkin.name}!`);
-                
-                // Reset fusion slots
-                generateFusionSlots();
-                updateUI();
-                saveGameData();
-            }
-        }
-
-        function convertDuplicates() {
-            const skinCounts = {};
-            gameData.inventory.forEach(skin => {
-                const key = `${skin.name}_${skin.rarity}`;
-                skinCounts[key] = (skinCounts[key] || 0) + 1;
-            });
-            
-            let fragmentsGained = 0;
-            const newInventory = [];
-            
-            Object.keys(skinCounts).forEach(key => {
-                const count = skinCounts[key];
-                const [name, rarity] = key.split('_');
-                const skin = gameData.inventory.find(s => s.name === name && s.rarity === rarity);
-                
-                if (count > 1) {
-                    // Keep one, convert others to fragments
-                    newInventory.push(skin);
-                    fragmentsGained += (count - 1) * Math.max(1, Math.floor(skin.value / 10));
-                } else {
-                    newInventory.push(skin);
-                }
-            });
-            
-            gameData.inventory = newInventory;
-            gameData.fragments += fragmentsGained;
-            
-            if (fragmentsGained > 0) {
-                showNotification(`Converted duplicates! +${fragmentsGained} fragments`);
-                updateInventory();
-                updateFragmentCount();
-                updateUI();
-                saveGameData();
-            } else {
-                showNotification("No duplicates found!");
-            }
-        }
-
-        // Event Cases
-        function checkEventCases() {
-            // Remove expired event cases
-            const now = Date.now();
-            caseDatabase.forEach(caseData => {
-                if (caseData.isEvent && now > caseData.eventEnd) {
-                    // Make event skins sellable
-                    gameData.inventory.forEach(skin => {
-                        if (skin.event && skin.unsellable) {
-                            skin.unsellable = false;
-                        }
-                    });
-                }
-            });
-        }
-
-        // Sound System
-        let soundEnabled = true;
-
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            document.getElementById('sound-toggle').textContent = soundEnabled ? '🔊' : '🔇';
-            showNotification(soundEnabled ? "Sound enabled" : "Sound disabled");
-        }
-
-        function playSound(type) {
-            if (!soundEnabled) return;
-            
-            // Create audio context for sound effects
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            switch (type) {
-                case 'spin':
-                    oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(220, audioContext.currentTime + 0.5);
-                    break;
-                case 'rare':
-                    oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
-                    oscillator.frequency.setValueAtTime(1100, audioContext.currentTime + 0.1);
-                    break;
-                case 'click':
-                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-                    break;
-            }
-            
-            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.3);
-        }
+        // Auto-save every 30 seconds
+        setInterval(saveGameData, 30000);
 
         // Initialize game when page loads
         window.onload = initGame;
-        
-        // Save game when page unloads
         window.onbeforeunload = saveGameData;
     </script>
 </body>
