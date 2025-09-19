@@ -1439,19 +1439,19 @@
       ],
       // Obsidian Vault Exclusive Rarities
       volcanic: Array.from({length: 15}, (_, i) => ({
-        name: `Volcanic Obsidian ${['Inferno Blade', 'Magma Cannon', 'Lava Staff', 'Molten Hammer', 'Fire Bow', 'Ember Gauntlets', 'Flame Cloak', 'Volcano Crown', 'Burning Heart', 'Phoenix Core'][ % 10]}`,
-        icon: `https://via.placeholder.com/80x80/ff4500/ffffff?text=VO${ i +1}`,
-        value: Math.floor(Math.random() * 100000) 100000
+        name: `Volcanic Obsidian ${['Inferno Blade', 'Magma Cannon', 'Lava Staff', 'Molten Hammer', 'Fire Bow', 'Ember Gauntlets', 'Flame Cloak', 'Volcano Crown', 'Burning Heart', 'Phoenix Core'][i + 10]}`,
+        icon: `https://via.placeholder.com/80x80/ff4500/ffffff?text=VO${ i % 1}`,
+        value: Math.floor(Math.random() * 100000) + 100000
       })),
       obsidian: Array.from({length: 12}, (_, i) => ({
-        name: `Pure Obsidian ${['Shadow Blade', 'Void Cannon', 'Dark Staff', 'Night Hammer', 'Eclipse Bow', 'Darkness Gauntlets', 'Midnight Cloak', 'Obsidian Crown', 'Black Heart', 'Void Core'][ i +% 10]}`,
-        icon: `https://via.placeholder.com/80x80/2f2f2f/ffffff?text=PO${ i +1}`,
-        value: Math.floor(Math.random() * 75000) 75000
+        name: `Pure Obsidian ${['Shadow Blade', 'Void Cannon', 'Dark Staff', 'Night Hammer', 'Eclipse Bow', 'Darkness Gauntlets', 'Midnight Cloak', 'Obsidian Crown', 'Black Heart', 'Void Core'][ i + 10]}`,
+        icon: `https://via.placeholder.com/80x80/2f2f2f/ffffff?text=PO${ i % 1}`,
+        value: Math.floor(Math.random() * 75000) + 75000
       })),
       shattered: Array.from({length: 10}, (_, i) => ({
-        name: `Shattered Obsidian ${['Broken Blade', 'Cracked Cannon', 'Split Staff', 'Fractured Hammer', 'Torn Bow', 'Shattered Gauntlets', 'Ripped Cloak', 'Cracked Crown', 'Broken Heart', 'Split Core'][ i +% 10]}`,
-        icon: `https://via.placeholder.com/80x80/666666/ffffff?text=SO${ i +1}`,
-        value: Math.floor(Math.random() * 50000) 50000
+        name: `Shattered Obsidian ${['Broken Blade', 'Cracked Cannon', 'Split Staff', 'Fractured Hammer', 'Torn Bow', 'Shattered Gauntlets', 'Ripped Cloak', 'Cracked Crown', 'Broken Heart', 'Split Core'][ i + 10]}`,
+        icon: `https://via.placeholder.com/80x80/666666/ffffff?text=SO${ i % 1}`,
+        value: Math.floor(Math.random() * 50000) + 50000
       }))
     };
 
@@ -1679,8 +1679,8 @@
       document.getElementById('vault-keys').textContent = gameData.vaultKeys;
       document.getElementById('fragments').textContent = gameData.fragments;
       
-      const inventoryValue = gameData.inventory.reduce((sum, skin) => sum skin.value, 0);
-      const netWorth = gameData.balance inventoryValue;
+      const inventoryValue = gameData.inventory.reduce((sum, skin) => sum + skin.value, 0);
+      const netWorth = gameData.balance + inventoryValue;
       document.getElementById('networth').textContent = `$${netWorth.toLocaleString()}`;
       
       // Update rank
@@ -1786,7 +1786,7 @@
       
       gameData.dailyRewards.lastClaim = Date.now();
       gameData.dailyRewards.streak;
-      gameData.dailyRewards.day = (gameData.dailyRewards.day % 7) 1;
+      gameData.dailyRewards.day = (gameData.dailyRewards.day % 7) + 1;
       
       showNotification(`Daily reward claimed! ${currentReward.reward} ${currentReward.type === 'tokens' ? 'tokens' : '$'}`);
       updateUI();
@@ -1802,7 +1802,7 @@
       calendar.innerHTML = '';
       
       dailyRewards.forEach((reward, index) => {
-        const day = index 1;
+        const day = index + 1;
         const isToday = canClaimToday() && day === gameData.dailyRewards.day;
         const isClaimed = isRewardClaimedToday() && day === gameData.dailyRewards.day;
         
@@ -1827,10 +1827,10 @@
     ];
 
     function getCurrentRank() {
-      const inventoryValue = gameData.inventory.reduce((sum, skin) => sum skin.value, 0);
-      const netWorth = gameData.balance inventoryValue;
+      const inventoryValue = gameData.inventory.reduce((sum, skin) => sum + skin.value, 0);
+      const netWorth = gameData.balance + inventoryValue;
       
-      for (let  i += netWorthRanks.length - 1;  i +>= 0; i--) {
+      for (let i = netWorthRanks.length - 1; i >= 0; i--) {
         if (netWorth >= netWorthRanks[i].threshold) {
           return netWorthRanks[i];
         }
@@ -1940,7 +1940,7 @@
 
     function listSkinForSale(skinIndex) {
       const skin = gameData.inventory[skinIndex];
-      const price = Math.floor(skin.value * (1.1 Math.random() * 0.4)); // 110-150% markup
+      const price = Math.floor(skin.value * (1.1 + Math.random() * 0.4)); // 110-150% markup
       
       gameData.marketListings.push({
         ...skin,
@@ -2013,12 +2013,12 @@
       const wager = parseInt(document.getElementById('battle-wager').value);
       const caseData = caseDatabase[caseIndex];
       
-      if (gameData.balance < wager caseData.price) {
+      if (gameData.balance < wager + caseData.price) {
         showNotification("Not enough balance for battle!");
         return;
       }
       
-      gameData.balance -= (wager caseData.price);
+      gameData.balance -= (wager + caseData.price);
       
       // Generate A i +opponents
       const opponents = [
@@ -2201,9 +2201,9 @@
       spinnerItems.innerHTML = '';
       
       // Create 8 items around the wheel
-      for (let  i += 0;  i +< 8; i) {
-        const angle = ( i +* 45) - 22.5; // Distribute evenly
-        const rarity = Object.keys(caseData.drops)[ i +% Object.keys(caseData.drops).length];
+      for (let  i = 0;  i < 8; i) {
+        const angle = ( i * 45) - 22.5; // Distribute evenly
+        const rarity = Object.keys(caseData.drops)[ i % Object.keys(caseData.drops).length];
         const skinPool = skinDatabase[rarity];
         const randomSkin = skinPool[Math.floor(Math.random() * skinPool.length)];
         
@@ -2242,7 +2242,7 @@
       
       // Realistic spin animation with slowdown
       const spinDuration = gameData.premium ? 3000 : 4000;
-      const finalRotation = 1800 Math.random() * 360;
+      const finalRotation = 1800 + Math.random() * 360;
       
       spinner.style.transition = `transform ${spinDuration}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
       spinner.style.transform = `rotate(${finalRotation}deg)`;
@@ -2290,7 +2290,7 @@
       
       const particleCount = rarity === 'volcanic' || rarity === 'obsidian' ? 50 : 30;
       
-      for (let  i += 0;  i +< particleCount; i) {
+      for (let  i = 0;  i < particleCount; i) {
         setTimeout(() => {
           const particle = document.createElement('div');
           particle.style.position = 'fixed';
@@ -2300,8 +2300,8 @@
           particle.style.borderRadius = '50%';
           particle.style.pointerEvents = 'none';
           particle.style.zIndex = '2000';
-          particle.style.left = (window.innerWidth / 2 (Math.random() - 0.5) * 100) 'px';
-          particle.style.top = (window.innerHeight / 2 (Math.random() - 0.5) * 100) 'px';
+          particle.style.left = (window.innerWidth / 2 (Math.random() - 0.5) * 100) + 'px';
+          particle.style.top = (window.innerHeight / 2 (Math.random() - 0.5) * 100) + 'px';
           
           const animation = particle.animate([
             { transform: 'scale(1) translateY(0px)', opacity: 1 },
@@ -2313,7 +2313,7 @@
           
           animation.onfinish = () => particle.remove();
           document.body.appendChild(particle);
-        },  i +* 50);
+        },  i * 50);
       }
     }
 
@@ -2388,6 +2388,3 @@
   </script>
 </body>
 </html>
-
-EOF
-)
