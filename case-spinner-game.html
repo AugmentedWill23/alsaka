@@ -1297,6 +1297,15 @@
 			
 			// Update event timers every second
 			setInterval(updateEventTimers, 1000);
+			
+			// Auto-refresh marketplace every 30 seconds
+			setInterval(() => {
+				generateMarketplace();
+				const marketScreen = document.getElementById('marketplace');
+				if (marketScreen && marketScreen.classList.contains('active')) {
+					updateMarketplace();
+				}
+			}, 30000);
         }
 		// Dynamic Event Timer Updates
 		function updateEventTimers() {
@@ -1318,11 +1327,18 @@
             if (saved) {
                 gameData = { ...gameData, ...JSON.parse(saved) };
             }
+			// Load sound preference
+			const savedSound = localStorage.getItem('caseSpinnerSound');
+			if (savedSound !== null) {
+				soundEnabled = savedSound === 'true';
+				document.getElementById('sound-toggle').textContent = soundEnabled ? '🔊' : '🔇';
+			}
         }
 
         function saveGameData() {
             gameData.lastSave = Date.now();
             localStorage.setItem('caseSpinnerGame', JSON.stringify(gameData));
+			localStorage.setItem('caseSpinnerSound', String(soundEnabled));
         }
 
 		// Screen Navigation
@@ -2247,6 +2263,7 @@
             soundEnabled = !soundEnabled;
             document.getElementById('sound-toggle').textContent = soundEnabled ? '🔊' : '🔇';
             showNotification(soundEnabled ? "Sound enabled" : "Sound disabled");
+			localStorage.setItem('caseSpinnerSound', String(soundEnabled));
         }
 
         function playSound(type) {
